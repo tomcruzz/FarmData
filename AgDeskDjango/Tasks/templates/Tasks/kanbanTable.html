@@ -41,14 +41,23 @@
     </div>
 </div>
 
+<!-- Messages -->
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert {{ message.tags }}" role="alert">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+
 <!-- Body -->
 <div>
     <div id="createTaskButton">
-        <!-- <button type="button" class="btn custom-button" data-toggle="modal" data-target="#exampleModal"> -->
         <button data-bs-toggle="modal" class="btn custom-button" data-bs-target="#newKanbanModal">
             Create New Kanban Board
         </button>
     </div>
+
     <br>
 
     <table class="table" id="taskTable">
@@ -63,35 +72,36 @@
                 <th class="taskTableHeading"></th>
             </tr>
         </thead>
+
         <tbody id="taskTableBody">
             {% for kanbanID, name, status0, status1, status2, status3, status4 in Kanbans %}
-            <tr onclick="{updateCurrentKanban('/tasks/kanbanView', '{{ kanbanID }}')}" class="taskTableRow pointable">
-                <td class="taskTableData">
-                    {{ name }}
-                </td>
-                <td class="taskTableData">
-                    {{ status0 }}
-                </td>
-                <td class="taskTableData">
-                    {{ status1 }}
-                </td>
-                <td class="taskTableData">
-                    {{ status2 }}
-                </td>
-                <td class="taskTableData">
-                    {{ status3 }}
-                </td>
-                <td class="taskTableData">
-                    {{ status4 }}
-                </td>
-                <td class="taskTableData">
-                    <form action="/tasks/deleteKanban" method="POST">
-                        {% csrf_token %}
-                        <input type="hidden" name="kanbanID" value="{{ kanbanID }}">
-                        <button type="submit" class="btn btn-danger" name="deleteKanbanForm">X</button>
-                    </form>
-                </td>
-            </tr>
+                <tr onclick="{updateCurrentKanban('/tasks/kanbanView', '{{ kanbanID }}')}" class="taskTableRow pointable">
+                    <td class="taskTableData">
+                        {{ name }}
+                    </td>
+                    <td class="taskTableData">
+                        {{ status0 }}
+                    </td>
+                    <td class="taskTableData">
+                        {{ status1 }}
+                    </td>
+                    <td class="taskTableData">
+                        {{ status2 }}
+                    </td>
+                    <td class="taskTableData">
+                        {{ status3 }}
+                    </td>
+                    <td class="taskTableData">
+                        {{ status4 }}
+                    </td>
+                    <td class="taskTableData">
+                        <form action="/tasks/deleteKanban" method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="kanbanID" value="{{ kanbanID }}">
+                            <button type="submit" class="btn btn-danger" name="deleteKanbanForm">X</button>
+                        </form>
+                    </td>
+                </tr>
             {% endfor %}
         </tbody>
     </table>

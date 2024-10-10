@@ -154,7 +154,12 @@
         <!-- Table Data -->
         <tbody>
             {% for info in ContactInfo %}
-            <tr class="userRowHeight">
+            <tr class="userRowHeight"
+                data-contact-method="{{ info.field }}" 
+                data-contact-info="{{ info.info }}" 
+                data-contact-info-id="{{ info.contactInfoID }}" 
+                onclick="populateModal(this)">
+
                 <!-- Contact Info -->
                 <td>{{ info.field }}</td>
                 <td>{{ info.info }}</td>
@@ -163,6 +168,7 @@
                     <a href="{% url 'deleteContactInfo' info.contactInfoID %}" onclick="return confirm('Are you sure you want to delete this item?')">
                         <img style="max-width:33px; max-height:33px;" src="{% static 'Images/bin.png' %}">
                     </a>
+                    
                     <button data-bs-toggle="modal" data-bs-target="#editContactInfo" id="editContactInfoButton" class="editContactInfoButton"
                         data-contact-method="{{ info.field }}" 
                         data-contact-info="{{ info.info }}" 

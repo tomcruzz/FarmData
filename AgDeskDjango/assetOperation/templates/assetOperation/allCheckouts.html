@@ -43,13 +43,13 @@
             </thead>
             <tbody>
             {% for log in logs %}
-                <tr> 
+                <tr onclick="{go_to_asset_url('{{ log.assetPrefix }}','{{ log.assetID }}', 'details')}" class="userRowHeight"> 
                     {% autoescape on %}
-                    <td><a class="asset_detail" href="{% url 'assetDetails' assetCategory=log.assetPrefix assetID=log.assetID %}">{{ log.assetName }}</a></td>
-                    <td><a class="asset_detail" href="{% url 'assetDetails' assetCategory=log.assetPrefix assetID=log.assetID %}">{{ log.userName }}</a></td>
-                    <td><a class="asset_detail" href="{% url 'assetDetails' assetCategory=log.assetPrefix assetID=log.assetID %}">{{ log.startDateTime }}</a></td>
-                    <td><a class="asset_detail" href="{% url 'assetDetails' assetCategory=log.assetPrefix assetID=log.assetID %}">{{ log.location }}</a></td>
-                    <td><a class="asset_detail" title="{{ log.notes }}" href="{% url 'assetDetails' assetCategory=log.assetPrefix assetID=log.assetID %}">{{ log.notesHead }}</a></td>
+                    <td><a class="asset_detail">{{ log.assetName }}</a></td>
+                    <td><a class="asset_detail">{{ log.userName }}</a></td>
+                    <td><a class="asset_detail">{{ log.startDateTime }}</a></td>
+                    <td><a class="asset_detail">{{ log.location }}</a></td>
+                    <td><a class="asset_detail" title="{{ log.notes }}">{{ log.notesHead }}</a></td>
                     {% endautoescape %}
                 </tr>
             <!-- If nothing in category -->

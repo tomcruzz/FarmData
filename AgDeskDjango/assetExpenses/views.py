@@ -7,34 +7,32 @@ from assetMaintenance.views import maintenanceManager
 from django.http import JsonResponse
 from django.contrib import messages
 from assetManagement.views import AssetStructures
+from django.contrib.auth.decorators import login_required
 
 class expensemanager():
-    
-    def retrieveExpenseByID(self, expenseID = None):
+
+    def retrieveExpenseByID(self, expenseID=None):
         try:
             return model_to_dict(Expense.objects.get(pk=expenseID))
         except Expense.DoesNotExist:
             return {"error": "Expense Record Not Found"}
         except Exception as e:
-            print(e)
             return {"error": str(e)}
-    
-    def retrieveExpenseByAsset(self, AssetID = None):
+
+    def retrieveExpenseByAsset(self, AssetID=None):
         try:
             return Expense.objects.filter(assetID_id=AssetID, deleted=False)
         except Expense.DoesNotExist:
             return {"error": "Asset Record Not Found"}
         except Exception as e:
-            print(e)
             return {"error": str(e)}
-        
-    def retrieveExpenseByMaintenanceRecord(self, MaintenanceID = None):
+
+    def retrieveExpenseByMaintenanceRecord(self, MaintenanceID=None):
         try:
-            return model_to_dict(Expense.objects.get(MaintenanceID = MaintenanceID))
+            return model_to_dict(Expense.objects.get(MaintenanceID=MaintenanceID))
         except Expense.DoesNotExist:
             return {"error": "maintenance Record Not Found"}
         except Exception as e:
-            print(e)
             return {"error": str(e)}
 
     def retrieveAllExpenses(self):
@@ -47,9 +45,8 @@ class expensemanager():
         except Expense.DoesNotExist:
             return {"error": "No Expense Records Found"}
         except Exception as e:
-            print(e)
             return {"error": str(e)}
-        
+
     def createExpense(self, expenseData, assetCategory, assetID, UserProfile):
         assetmanager = AssetManager()
         maintenancemanager = maintenanceManager()
@@ -60,27 +57,30 @@ class expensemanager():
                 return {"error": "User Profile and Asset ID cannot be None"}
             elif expenseData.get("expenseType") == 1:
                 targetMaintenanceCost = maintenancemanager().retrieveMaintenanceByID(expenseData.get("MaintenanceID")).get("cost")
-                expense = Expense( assetID          = targetAsset,
-                                   MaintenanceID    = expenseData["MaintenanceID"],
-                                   expenseType      = expenseData["expenseType"],
-                                   cost             = targetMaintenanceCost,
-                                   receiptNumber    = expenseData["receiptNumber"],
-                                   expenseLodgedBy  = expenseData["expenseLodgedBy"])
+                expense = Expense(
+                    assetID         = targetAsset,
+                    MaintenanceID   = expenseData["MaintenanceID"],
+                    expenseType     = expenseData["expenseType"],
+                    cost            = targetMaintenanceCost,
+                    receiptNumber   = expenseData["receiptNumber"],
+                    expenseLodgedBy = expenseData["expenseLodgedBy"]
+                )
                 expense.save()
                 return model_to_dict(expense)
             else:
-                expense = Expense( assetID          = targetAsset,
-                                   MaintenanceID    = expenseData["MaintenanceID"],
-                                   expenseType      = expenseData["expenseType"],
-                                   cost             = expenseData["cost"],
-                                   receiptNumber    = expenseData["receiptNumber"],
-                                   expenseLodgedBy  = expenseData["expenseLodgedBy"])
+                expense = Expense(
+                    assetID         = targetAsset,
+                    MaintenanceID   = expenseData["MaintenanceID"],
+                    expenseType     = expenseData["expenseType"],
+                    cost            = expenseData["cost"],
+                    receiptNumber   = expenseData["receiptNumber"],
+                    expenseLodgedBy = expenseData["expenseLodgedBy"]
+                )
                 expense.save()
                 return model_to_dict(expense)
         except Exception as e:
-            print(e)
             return {"error": str(e)}
-        
+
     def editExpense(self, expenseID, expenseData):
         try:
             targetExpense = Expense.objects.get(pk=expenseID)
@@ -90,9 +90,8 @@ class expensemanager():
         except Expense.DoesNotExist:
             return {"error": "Expense Record Not Found"}
         except Exception as e:
-            print(e)
             return {"error": str(e)}
-    
+
     def deleteExpense(self, expenseID):
         try:
             targetExpense = Expense.objects.get(pk=expenseID)
@@ -101,12 +100,13 @@ class expensemanager():
         except Expense.DoesNotExist:
             return {"error": "Expense Record Not Found"}
         except Exception as e:
-            print(e)
             return {"error": str(e)}
-        
+
+
 def get_expense_details(expenseID):
     return JsonResponse(model_to_dict(Expense.objects.get(pk=expenseID)))
 
+@login_required(login_url="login")
 def viewAllExpenses(request):
     expenseManagerInstance = expensemanager()
     expenseList = expenseManagerInstance.retrieveAllExpenses()
@@ -114,8 +114,8 @@ def viewAllExpenses(request):
         "expenseData": expenseList
     }
     return render(request, "assetExpenses/expenseList.html", context)
-        
 
+@login_required(login_url="login")
 def viewExpenseForSingleAsset(request, assetCategory, assetID):
     expenseManagerInstance = expensemanager()
     assetStructures = AssetStructures()
@@ -127,32 +127,38 @@ def viewExpenseForSingleAsset(request, assetCategory, assetID):
     if request.method == "GET":
         assetExpenses = expenseManagerInstance.retrieveExpenseByAsset(assetID)
         context = {
-            "currentAsset": currentAsset,
+            "currentAsset" : currentAsset,
             "assetCategory": assetCategory,
-            "expenseData": assetExpenses,
-            "creationForm": expenseCreationForm,
-            "editForm": expenseEditForm
+            "expenseData"  : assetExpenses,
+            "creationForm" : expenseCreationForm,
+            "editForm"     : expenseEditForm
         }
         return render(request, "assetExpenses/viewExpenses.html", context)
-    
+
     elif request.method == "POST":
         createExpenseFormPost = forms.createExpenseForm(request.user, assetID, request.POST)
-        if createExpenseFormPost.is_valid():
-            print(createExpenseFormPost.cleaned_data) 
+        if createExpenseFormPost.is_valid(): 
             expenseManagerInstance.createExpense(createExpenseFormPost.cleaned_data, assetCategory, assetID, request.user)
             messages.add_message(request, messages.SUCCESS, "Expense Record Created")
             context = {
-                "expenseData": expenseManagerInstance.retrieveExpenseByAsset(assetID),
+                "expenseData"  : expenseManagerInstance.retrieveExpenseByAsset(assetID),
                 "assetCategory": assetCategory,
-                "currentAsset": currentAsset,
-                "creationForm": createExpenseFormPost,
+                "currentAsset" : currentAsset,
+                "creationForm" : createExpenseFormPost,
             }
         else:
-            print(expenseCreationForm.errors)
-
+            context = {
+                "expenseData"  : expenseManagerInstance.retrieveExpenseByAsset(assetID),
+                "assetCategory": assetCategory,
+                "currentAsset" : currentAsset,
+                "creationForm" : createExpenseFormPost,
+                "error"        : createExpenseFormPost.errors
+            }
+            return render(request, "assetExpenses/viewExpenses.html", context)
     return redirect(f'/asset/{assetCategory}/{assetID}/expenses')
 
-def expenseDetails(request, expenseID, assetID = None, assetCategory = None):
+@login_required(login_url="login")
+def expenseDetails(request, expenseID, assetID=None, assetCategory=None):
     expenseManagerInstance = expensemanager()
     expenseRecord = expenseManagerInstance.retrieveExpenseByID(expenseID)
     currentAsset = None
@@ -170,45 +176,54 @@ def expenseDetails(request, expenseID, assetID = None, assetCategory = None):
     except Exception as e:
         print(e)
         return JsonResponse({"error": str(e)})
-    
-    form = forms.editExpenseForm(initial = expenseRecord)
+
+    form = forms.editExpenseForm(request.user, assetID, initial=expenseRecord)
 
     if request.method == "GET":
         if assetID is not None:
             context = {
-                "expenseData": expenseRecord,
-                "currentAsset": currentAsset,
+                "expenseData"  : expenseRecord,
+                "currentAsset" : currentAsset,
                 "assetCategory": assetCategory,
-                "form": form,
+                "form"         : form,
             }
         else:
             context = {
-                "expenseData": expenseRecord,
-                "currentAsset": expenseRecord.get("assetID"),
+                "expenseData"  : expenseRecord,
+                "currentAsset" : expenseRecord.get("assetID"),
                 "assetCategory": expenseRecord.get("assetID").get("assetCategory"),
-                "form": form,
+                "form"         : form,
             }
-        
+
         return render(request, "assetExpenses/expenseDetails.html", context)
-    
+
     elif request.method == "POST":
         if "Update" in request.POST:
             editExpenseFormPost = forms.editExpenseForm(request.user, assetID, request.POST)
             if editExpenseFormPost.is_valid():
                 expenseManagerInstance.editExpense(expenseID, editExpenseFormPost.cleaned_data)
                 messages.add_message(request, messages.SUCCESS, "Expense Record Updated")
+                return redirect(f'/asset/{assetCategory}/{assetID}/expenses/{expenseID}/details')
             else:
+                context = {
+                    "expenseData"  : expenseRecord,
+                    "currentAsset" : currentAsset,
+                    "assetCategory": assetCategory,
+                    "form"         : editExpenseFormPost,
+                    "error"        : editExpenseFormPost.errors
+                }
                 print(editExpenseFormPost.errors)
-            return redirect(f'/asset/{assetCategory}/{assetID}/expenses/{expenseID}')
+
+                return render(request, "assetExpenses/expenseDetails.html", context)
+
         elif "Delete" in request.POST:
             deleteExpense(request, expenseID, assetCategory, assetID)
-    
+
     return redirect(f'/asset/{assetCategory}/{assetID}/expenses')
-    
-            
+
+@login_required(login_url="login")
 def deleteExpense(request, expenseID, assetCategory, assetID):
     expenseManagerInstance = expensemanager()
     expenseManagerInstance.deleteExpense(expenseID)
     messages.add_message(request, messages.WARNING, "Expense Record Deleted")
     return redirect(f'/asset/{assetCategory}/{assetID}/expenses')
-            

@@ -1,43 +1,38 @@
-/* Full Page */
-
+/* Full Page Layout */
 #topOfPage {
     max-width: 100%;
-    margin: 0px;
+    margin: 0;
 }
 
 #topOfPage .col {
     width: 100%;
-    padding: 0px;
+    padding: 0;
 }
 
 #bottomOfPage {
-    min-height:  calc(100vh - 83px);
+    min-height: calc(100vh - 83px);
     margin-top: 83px;
-    overflow-x:hidden;
-
+    width: 100%;
 }
 
 /* Top Menu Navigation */
-
-#topNavBar{
+#topNavBar {
     padding-right: 25px;
     background-color: #124559;
-
 }
 
 #logoContainer {
-    padding: 0px;
-    margin: 0px;
+    padding: 0;
+    margin: 0;
 }
 
-#logo{
+#logo {
     width: 40px;
     margin: 10px;
 }
 
 #topNavBar .navbar-brand {
     color: white;
-    font-family: Arial, Helvetica, sans-serif;
     font-size: 30px;
     font-weight: bold;
     padding-left: 5px;
@@ -45,7 +40,7 @@
 
 #search {
     width: 20px !important;
-    margin: 0px !important;
+    margin: 0 !important;
 }
 
 #navUtil img {
@@ -53,156 +48,109 @@
     margin: 10px;
 }
 
-
 #searchbutton {
     margin-right: 10px;
 }
 
-
 /* Side Menu Navigation */
-#sidebar-column{
+#sidebar-column {
     background-color: #124559;
-    width:4rem;
+    width: 10rem;
     height: 100vh;
-    padding-left: 15px;
-    padding-right: 15px;
+    padding-top: 15px;
     position: fixed;
-    z-index: 2000;
+    z-index: 2;
+    font-size: 16px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
-#sidebar-menu-top {
-    align-items: center;
-}
 
-#sidebar-menu-top ul {
-    padding: 0px;
-
-}
-
+#sidebar-menu-top,
 #sidebar-menu-bottom {
-    position: fixed;
-    bottom: 0;
-}
-#sidebar-menu-bottom ul {
-    padding: 0px;
-}
-
-
-#sidebar-icons {
-    padding: 0px;
     width: 100%;
 }
 
-#sidebar-icons:hover {
-    background-color: #196482;
-
-}
-#sidebar-icons img {
-    width: 30px;
-    margin: 0px;
+#sidebar-menu-top ul,
+#sidebar-menu-bottom ul {
+    padding: 0;
+    margin: 0;
+    list-style-type: none;
 }
 
-#sidebar-column li {
-    width: 64px;
-    height: 62px;
+.sidebar-item {
+    margin-bottom: 10px;
 }
 
-
-#dropdownNavIcon {
-    width: 30px; 
-    padding: 0px;
+.sidebar-item span {
+    font-size: 18px;
 }
 
-#dropdownNav:hover{
-    background-color: #196482;
-}
-
-#dropdownNav {
-    width:100%;
-    height: 100%;
-
-}
-
-#dropdownNav a{
-    display: block;
-    padding: 16px;
-    position:inherit;
-}
-
-#dropdownItem li{
-    width:100%;
-    height:100%;
-    text-align: left;
-}
-
-#dropdownItem a{
-    color: #212529;
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    color: white;
     text-decoration: none;
-    padding-top: 4px;
-    padding-bottom: 4px;
-    padding-left: 16px;
-    padding-right: 16px;
+    padding: 10px;
+    border-radius: 5px;
+    transition: background-color 0.3s;
 }
 
-#dropdownItem li:hover{
-    background-color: #f8f9fa;
-}
-
-#settingsIcon {
-    width: 30px; 
-    padding: 0px;
-}
-
-#settings:hover{
+.sidebar-link:hover,
+#dropdownNav:hover,
+#settings:hover {
     background-color: #196482;
-}
-
-#settings a{
-    display: block;
-    padding: 16px;
-    position:inherit;
-}
-
-#settingsDropdown li{
-    width:100%;
-    height:100%;
-    text-align: left;
-}
-
-#settingsDropdown a{
-    color: #212529;
+    color: white;
     text-decoration: none;
-    padding-top: 4px;
-    padding-bottom: 4px;
-    padding-left: 16px;
-    padding-right: 16px;
 }
 
-#settingsDropdown li:hover{
-    background-color: #f8f9fa;
+.sidebar-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+}
+
+.sidebar-link span {
+    flex-grow: 1;
+}
+
+.fa-chevron-down {
+    transition: transform 0.3s;
+}
+
+.sidebar-link[aria-expanded="true"] .fa-chevron-down {
+    transform: rotate(180deg);
+}
+
+#sidebar-menu-top ul ul {
+    padding-left: 15px;
+}
+
+#sidebar-menu-top ul ul li {
+    margin-bottom: 5px;
+}
+
+#sidebar-menu-top ul ul a {
+    color: #e0e0e0;
+    text-decoration: none;
+    font-size: 1em;
+}
+
+#sidebar-menu-top ul ul a:hover {
+    color: white;
 }
 
 /* Central Page */
 #CentralPage {
-    margin-top: 35px;
-    margin-bottom: 35px;
-    margin-left: 110px;
-    margin-right: 45px;
-    width: calc(100vw - 170px);
-    overflow-x:hidden;
+    margin: 25px 35px 25px 11rem;
+    width: 100%;
+    overflow-x: hidden;
     overflow-y: auto;
-    padding-left: 10px;
+    padding-left: 5px;
 }
 
-
-#username {
-    padding-left: 16px;
-    padding-right:16px;
-    padding-top:4px;
-    padding-bottom:4px;
-}
-
-
+/* Utility Classes */
 .custom-button { 
     color: white; 
     background-color: #598392; 
@@ -227,10 +175,6 @@
     height: 10vw;
     object-fit: cover;
 }
-.gridster .gs-w{
-    z-index: 1;
-}
-
 
 .widget-delete-btn {
     position: absolute;
@@ -251,4 +195,22 @@
 .widget-delete-btn:hover {
     background-color: #ff0000;
     color: #ffffff;
+}
+
+.pointable:hover {
+    cursor: pointer;
+}
+
+.userRowHeight:hover {
+    --bs-table-bg: #C2D3DA;
+    cursor: pointer;
+}
+
+/* Gridster specific */
+.gridster .gs-w {
+    z-index: 1;
+}
+
+#username {
+    padding: 4px 16px;
 }

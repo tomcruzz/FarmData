@@ -2,7 +2,6 @@
 Views for assetOperations, including check out / check in, operation logs ans performance metrics.
 """
 
-
 # Imports
 from datetime import datetime
 
@@ -17,28 +16,33 @@ from .models import OperationLog
 from .forms import checkOutForm, checkInForm
 from django.contrib import messages
 
+
 # Contants
 MAX_NOTES_HEAD = 20
 
+
+# Utility
 def get_user_current_checkouts(user_id):
     """
     Function to get the current checkouts for a user.
     """
 
     return OperationLog.objects.filter(
-        userID=user_id,
-        endDateTime__isnull=True,
-        deleted=False
+        userID              = user_id,
+        endDateTime__isnull = True   ,
+        deleted             = False
     )
+
 
 def get_user_current_checkouts_oldest(user_id):
     three_oldest_logs = OperationLog.objects.filter(
-        userID=user_id,
-        endDateTime__isnull=True,
-        deleted=False
+        userID              = user_id,
+        endDateTime__isnull = True   ,
+        deleted             = False
     ).order_by('startDateTime')[:3]
 
     return three_oldest_logs
+
 
 # Check Out / Check In``
 @login_required(login_url="login")
@@ -76,11 +80,13 @@ def checkout(request):
 
         #     prefix = asset_instance["assetPrefix"]
         #     return redirect(f"/assetManagement/{prefix}")
+
         messages.add_message(request, messages.SUCCESS, "Checkout Complete")
         return checkoutBandaid(request)
 
     # Not POST leads to index. Ought to be 404.
     return redirect("/")
+
 
 def checkoutBandaid(request):
     """
@@ -90,9 +96,9 @@ def checkoutBandaid(request):
 
     asset_instance = asset.objects.get(assetID=request.POST["assetID"])
     log = OperationLog(
-        assetID  = asset_instance,
+        assetID  = asset_instance                             ,
         userID   = UserProfile.objects.get(id=request.user.id),
-        location = request.POST["location"],
+        location = request.POST["location"]                   ,
         notes    = request.POST["notes"]
     )
     log.save()
@@ -100,6 +106,7 @@ def checkoutBandaid(request):
     prefix = asset_instance.assetPrefix
 
     return redirect(f"/asset/{prefix}")
+
 
 @login_required(login_url="login")
 def checkin(request):
@@ -111,9 +118,9 @@ def checkin(request):
 
     if request.method == "GET":
         currently_checked_out = OperationLog.objects.filter(
-            userID=request.user.id,
-            endDateTime__isnull=True,
-            deleted=False
+            userID              = request.user.id,
+            endDateTime__isnull = True           ,
+            deleted             = False
         )
 
         # Making dictionary lists for the asset types.
@@ -123,20 +130,21 @@ def checkin(request):
             prefix = log.assetID.assetPrefix
             # Everything we want on the client side
             logs[prefix].append({
-                "logID"        : log.logID,
-                "startDateTime": log.startDateTime,
-                "location"     : log.location,
-                "notes"        : log.notes,
+                "logID"        : log.logID              ,
+                "startDateTime": log.startDateTime      ,
+                "location"     : log.location           ,
+                "notes"        : log.notes              ,
 
-                "assetName"    : log.assetID.assetName,
+                "assetName"    : log.assetID.assetName  ,
                 "assetPrefix"  : log.assetID.assetPrefix,
                 "assetID"      : log.assetID.assetID
             })
 
         # List of tuples of (logs for type of asset, label for type of asset)
         assetLogs = [
-            (logs[prefix], AssetStructures.assetLabelMapper[prefix])
-            for prefix in ["SE", "LE", "LV", "HV"]
+                (logs[prefix], AssetStructures.assetLabelMapper[prefix])
+            for prefix
+            in  ["SE", "LE", "LV", "HV"]
         ]
 
         # Pop empty lists. Reverse index to prevent index moving between pops.
@@ -145,9 +153,9 @@ def checkin(request):
                 assetLogs.pop(i)
 
         previous_checked_out = OperationLog.objects.filter(
-            userID=request.user.id,
-            endDateTime__isnull=False,
-            deleted=False
+            userID              = request.user.id,
+            endDateTime__isnull = False          ,
+            deleted             = False
         )
 
         # Making dictionary lists for the asset types.
@@ -157,21 +165,22 @@ def checkin(request):
             prefix = log.assetID.assetPrefix
             # Everything we want on the client side
             previous_logs[prefix].append({
-                "logID"        : log.logID,
-                "startDateTime": log.startDateTime,
-                "endDateTime"  : log.endDateTime,
-                "location"     : log.location,
-                "notes"        : log.notes,
+                "logID"        : log.logID              ,
+                "startDateTime": log.startDateTime      ,
+                "endDateTime"  : log.endDateTime        ,
+                "location"     : log.location           ,
+                "notes"        : log.notes              ,
 
-                "assetName"    : log.assetID.assetName,
+                "assetName"    : log.assetID.assetName  ,
                 "assetPrefix"  : log.assetID.assetPrefix,
                 "assetID"      : log.assetID.assetID
             })
 
         # List of tuples of (logs for type of asset, label for type of asset)
         previous_assetLogs = [
-            (previous_logs[prefix], AssetStructures.assetLabelMapper[prefix])
-            for prefix in ["SE", "LE", "LV", "HV"]
+                (previous_logs[prefix], AssetStructures.assetLabelMapper[prefix])
+            for prefix
+            in  ["SE", "LE", "LV", "HV"]
         ]
 
         # Pop empty lists. Reverse index to prevent index moving between pops.
@@ -213,8 +222,8 @@ def viewLogs(request, assetCategory, assetID):
 
     if request.method == "GET":
         logs = OperationLog.objects.filter(
-            assetID=asset.objects.get(assetID=assetID),
-            deleted=False
+            assetID = asset.objects.get(assetID=assetID),
+            deleted = False
         )
 
         asset_instance = asset.objects.get(assetID=assetID)
@@ -227,14 +236,14 @@ def viewLogs(request, assetCategory, assetID):
             else:
                 notesHead = log["notes"][:MAX_NOTES_HEAD] + "..."
             logs_dict[i]["notesHead"] = notesHead
-            logs_dict[i]["userName"] = logs[i].userID.username
+            logs_dict[i]["userName" ] = logs[i].userID.username
 
         context = {
-            "logs"        : logs_dict,
-            "assetName"   : asset_instance.assetName,
-            "currentAsset": asset_instance,
-            "assetID"     : assetID,
-            "assetPrefix" : asset_instance.assetPrefix,
+            "logs"        : logs_dict                 ,
+            "assetName"   : asset_instance.assetName  ,
+            "currentAsset": asset_instance            ,
+            "assetID"     : assetID                   ,
+            "assetPrefix" : asset_instance.assetPrefix
         }
 
         return render(request, "assetOperation/assetLogs.html", context)
@@ -245,8 +254,8 @@ def viewLogs(request, assetCategory, assetID):
 def allCheckouts(request):
     if request.method == "GET":
         currently_checked_out = OperationLog.objects.filter(
-            endDateTime__isnull=True,
-            deleted=False
+            endDateTime__isnull = True ,
+            deleted             = False
         )
 
         # Making dictionary lists for the asset types.
@@ -260,23 +269,24 @@ def allCheckouts(request):
             else:
                 notesHead = log.notes[:MAX_NOTES_HEAD] + "..."
             logs[prefix].append({
-                "logID"        : log.logID,
-                "startDateTime": log.startDateTime,
-                "location"     : log.location,
-                "notes"        : log.notes,
-                "notesHead"    : notesHead,
+                "logID"        : log.logID              ,
+                "startDateTime": log.startDateTime      ,
+                "location"     : log.location           ,
+                "notes"        : log.notes              ,
+                "notesHead"    : notesHead              ,
 
-                "userName"     : log.userID.username,
+                "userName"     : log.userID.username    ,
 
-                "assetName"    : log.assetID.assetName,
+                "assetName"    : log.assetID.assetName  ,
                 "assetPrefix"  : log.assetID.assetPrefix,
                 "assetID"      : log.assetID.assetID
             })
 
         # List of tuples of (logs for type of asset, label for type of asset)
         assetLogs = [
-            (logs[prefix], prefix)
-            for prefix in ["SE", "LE", "LV", "HV"]
+                (logs[prefix], prefix)
+            for prefix
+            in  ["SE", "LE", "LV", "HV"]
         ]
 
         context = {

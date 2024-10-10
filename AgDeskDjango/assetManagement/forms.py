@@ -26,7 +26,7 @@ class createSmallAssetForm(ModelForm):
             'Location'    ,
             'serialNumber',
             'partsList'   ,
-            StrictButton("Close"         , css_class="btn btn-secondary float-left" , data_bs_dismiss="modal"),
+            StrictButton("Close"         , css_class="btn btn-secondary float-left" , data_bs_dismiss="modal", onclick="closeModal()"),
             StrictButton("Create Asset"  , css_class="btn custom-button float-right", type="submit")
         )
 
@@ -41,8 +41,10 @@ class createSmallAssetForm(ModelForm):
             self.fields["assetImage"      ].widget.attrs.update({"class": "form-control"})
 
     assetName = forms.CharField(max_length=100, label="Asset Name", widget=forms.TextInput(attrs={'class': 'form-control'}))
-    dateManufactured = forms.DateField(input_formats=["%d/%m/%Y"], label="Date Manufactured", widget=forms.DateInput(attrs={'class': 'form-control', 'placeholder': 'Format - DD/MM/YYYY'}))
-    datePurchased = forms.DateField(input_formats=["%d/%m/%Y"], label="Date Purchased", widget=forms.DateInput(attrs={'class': 'form-control', 'placeholder': 'Format - DD/MM/YYYY'}))
+    dateManufactured = forms.DateField(input_formats=["%d/%m/%Y"], label="Date Manufactured", widget=forms.DateInput(attrs={'class': 'form-control', 'placeholder': 'Format - DD/MM/YYYY'}),
+                                       error_messages={'invalid': 'Enter a valid date in the format DD/MM/YYYY'})
+    datePurchased = forms.DateField(input_formats=["%d/%m/%Y"], label="Date Purchased", widget=forms.DateInput(attrs={'class': 'form-control', 'placeholder': 'Format - DD/MM/YYYY'}),
+                                    error_messages={'invalid': 'Enter a valid date in the format DD/MM/YYYY'})
     serialNumber = forms.CharField(max_length=100, label="Serial Number", widget=forms.TextInput(attrs={'class': 'form-control'}))
     Manufacturer = forms.CharField(max_length=100, label="Manufacturer", widget=forms.TextInput(attrs={'class': 'form-control'}))
     partsList = forms.CharField(max_length=255, label="Parts List", widget=forms.Textarea(attrs={"cols": 40, "rows": 6, 'class': 'form-control'}))
@@ -50,18 +52,17 @@ class createSmallAssetForm(ModelForm):
     assetImage = forms.ImageField(label="Image", required=False, initial=r"images/asset_images/defaultImage.jpg")
 
     def clean(self):
-        dateManufactured = self.cleaned_data.get('dateManufactured')
-        datePurchased = self.cleaned_data.get('datePurchased')
-        errorMessages = []
+        cleaned_data = super().clean()
+        datePurchased = cleaned_data.get('datePurchased')
+                
+        if datePurchased != None and datePurchased > datetime.date.today():
+                self._errors["datePurchased"] = ["Date Purchased cannot be in the future."]
 
-        if datePurchased > datetime.date.today():
-            errorMessages.append("Date Purchased cannot be in the future.")
-            self._errors["datePurchased"] = "Date Purchased cannot be in the future."
+        if not super().is_valid():
+            raise forms.ValidationError('Please correct the errors below and resubmit the form.')
 
-        if len(errorMessages):
-            raise forms.ValidationError(' & '.join(errorMessages))
 
-        return self.cleaned_data
+        return cleaned_data
 
     class Meta:
         model = SmallEquipment
@@ -94,7 +95,7 @@ class createLargeAssetForm(ModelForm):
             'Location' ,
             'vin'      ,
             'partsList',
-            StrictButton("Close"         , css_class="btn btn-secondary float-left" , data_bs_dismiss="modal"),
+            StrictButton("Close"         , css_class="btn btn-secondary float-left" , data_bs_dismiss="modal", onclick="closeModal()"),
             StrictButton("Create Asset"  , css_class="btn custom-button float-right", type="submit")
         )
 
@@ -109,13 +110,29 @@ class createLargeAssetForm(ModelForm):
             self.fields["assetImage"      ].widget.attrs.update({"class": "form-control"})
 
     assetName = forms.CharField(max_length=100, label="Asset Name", widget=forms.TextInput(attrs={'class': 'form-control'}))
-    dateManufactured = forms.DateField(input_formats=["%d/%m/%Y"], label="Date Manufactured", widget=forms.DateInput(attrs={'class': 'form-control', 'placeholder': 'Format - DD/MM/YYYY'}))
-    datePurchased = forms.DateField(input_formats=["%d/%m/%Y"], label="Date Purchased", widget=forms.DateInput(attrs={'class': 'form-control', 'placeholder': 'Format - DD/MM/YYYY'}))
-    vin = forms.CharField(max_length=100, label="VIN Number", widget=forms.TextInput(attrs={'class': 'form-control'}))
+    dateManufactured = forms.DateField(input_formats=["%d/%m/%Y"], label="Date Manufactured", widget=forms.DateInput(attrs={'class': 'form-control', 'placeholder': 'Format - DD/MM/YYYY'}),
+                                       error_messages={'invalid': 'Enter a valid date in the format DD/MM/YYYY'})
+    datePurchased = forms.DateField(input_formats=["%d/%m/%Y"], label="Date Purchased", widget=forms.DateInput(attrs={'class': 'form-control', 'placeholder': 'Format - DD/MM/YYYY'}),
+                                    error_messages={'invalid': 'Enter a valid date in the format DD/MM/YYYY'})
+    vin = forms.CharField(max_length=17, min_length=17,label="VIN Number", widget=forms.TextInput(attrs={'class': 'form-control'}),
+                          error_messages={'invalid': 'Enter a valid VIN number'})
     Manufacturer = forms.CharField(max_length=100, label="Manufacturer", widget=forms.TextInput(attrs={'class': 'form-control'}))
     partsList = forms.CharField(max_length=255, label="Parts List", widget=forms.Textarea(attrs={"cols": 40, "rows": 6, 'class': 'form-control'}))
     Location = forms.CharField(max_length=100, label="Location", widget=forms.TextInput(attrs={'class': 'form-control'}))
     assetImage = forms.ImageField(label="Image", required=False, initial=r"images/asset_images/defaultImage.jpg")
+
+    def clean(self):
+        cleaned_data = super().clean()
+        datePurchased = cleaned_data.get('datePurchased')
+                
+        if datePurchased != None and datePurchased > datetime.date.today():
+            self._errors["datePurchased"] = ["Date Purchased cannot be in the future."]
+
+        if not super().is_valid():
+            raise forms.ValidationError('Please correct the errors below and resubmit the form.')
+
+
+        return cleaned_data
 
     class Meta:
         model = LargeEquipment
@@ -151,7 +168,7 @@ class createLightVehicleForm(ModelForm):
             ),
             'partsList'     ,
             'currentlyInUse',
-            StrictButton("Close"         , css_class="btn btn-secondary float-left" , data_bs_dismiss="modal"),
+            StrictButton("Close"         , css_class="btn btn-secondary float-left" , data_bs_dismiss="modal", onclick="closeModal()"),
             StrictButton("Create Asset"  , css_class="btn custom-button float-right", type="submit")
         )
 
@@ -167,15 +184,31 @@ class createLightVehicleForm(ModelForm):
             self.fields["assetImage"      ].widget.attrs.update({"class": "form-control"})
 
     assetName = forms.CharField(max_length=100, label="Asset Name", widget=forms.TextInput(attrs={'class': 'form-control'}))
-    dateManufactured = forms.DateField(input_formats=["%d/%m/%Y"], label="Date Manufactured", widget=forms.DateInput(attrs={'class': 'form-control', 'placeholder': 'Format - DD/MM/YYYY'}))
-    datePurchased = forms.DateField(input_formats=["%d/%m/%Y"], label="Date Purchased", widget=forms.DateInput(attrs={'class': 'form-control', 'placeholder': 'Format - DD/MM/YYYY'}))
-    vin = forms.CharField(max_length=100, label="VIN Number", widget=forms.TextInput(attrs={'class': 'form-control'}))
+    dateManufactured = forms.DateField(input_formats=["%d/%m/%Y"], label="Date Manufactured", widget=forms.DateInput(attrs={'class': 'form-control', 'placeholder': 'Format - DD/MM/YYYY'}),
+                                       error_messages={'invalid': 'Enter a valid date in the format DD/MM/YYYY'})
+    datePurchased = forms.DateField(input_formats=["%d/%m/%Y"], label="Date Purchased", widget=forms.DateInput(attrs={'class': 'form-control', 'placeholder': 'Format - DD/MM/YYYY'}),
+                                    error_messages={'invalid': 'Enter a valid date in the format DD/MM/YYYY'})
+    vin = forms.CharField(max_length=17, min_length=17,label="VIN Number", widget=forms.TextInput(attrs={'class': 'form-control'}),
+                          error_messages={'invalid': 'Enter a valid VIN number'})
     Manufacturer = forms.CharField(max_length=100, label="Manufacturer", widget=forms.TextInput(attrs={'class': 'form-control'}))
     partsList = forms.CharField(max_length=255, label="Parts List", widget=forms.Textarea(attrs={"cols": 40, "rows": 6, 'class': 'form-control'}))
     Location = forms.CharField(max_length=100, label="Location", widget=forms.TextInput(attrs={'class': 'form-control'}))
     Registration = forms.CharField(max_length=100, label="Registration", widget=forms.TextInput(attrs={'class': 'form-control'}))
     currentlyInUse = forms.BooleanField(label="Currently In Use", required=False, widget=forms.CheckboxInput(attrs={'class': 'form-check'}))
     assetImage = forms.ImageField(label="Image", required=False, initial=r"images/asset_images/defaultImage.jpg")
+
+    def clean(self):
+        cleaned_data = super().clean()
+        datePurchased = cleaned_data.get('datePurchased')
+
+        if datePurchased != None and datePurchased > datetime.date.today():
+            self._errors["datePurchased"] = ["Date Purchased cannot be in the future."]
+
+        if not super().is_valid():
+            raise forms.ValidationError('Please correct the errors below and resubmit the form.')
+
+
+        return cleaned_data
 
     class Meta:
         model = lightVehicle
@@ -217,7 +250,7 @@ class createHeavyVehicleForm(ModelForm):
                 Column('inTransport'       , css_class='form-group col-md-6 mb-0'),
                 Column('interFarmTransport', css_class='form-group col-md-6 mb-0')
             ),
-            StrictButton("Close"           , css_class="btn btn-secondary float-left" , data_bs_dismiss="modal"),
+            StrictButton("Close"           , css_class="btn btn-secondary float-left" , data_bs_dismiss="modal", onclick="closeModal()"),
             StrictButton("Create Asset"    , css_class="btn custom-button float-right", type="submit")
         )
 
@@ -234,9 +267,12 @@ class createHeavyVehicleForm(ModelForm):
             self.fields["assetImage"        ].widget.attrs.update({"class": "form-control"})
 
     assetName = forms.CharField(max_length=100, label="Asset Name", widget=forms.TextInput(attrs={'class': 'form-control'}))
-    dateManufactured = forms.DateField(input_formats=["%d/%m/%Y"], label="Date Manufactured", widget=forms.DateInput(attrs={'class': 'form-control', 'placeholder': 'Format - DD/MM/YYYY'}))
-    datePurchased = forms.DateField(input_formats=["%d/%m/%Y"], label="Date Purchased", widget=forms.DateInput(attrs={'class': 'form-control', 'placeholder': 'Format - DD/MM/YYYY'}))
-    vin = forms.CharField(max_length=100, label="VIN Number", widget=forms.TextInput(attrs={'class': 'form-control'}))
+    dateManufactured = forms.DateField(input_formats=["%d/%m/%Y"], label="Date Manufactured", widget=forms.DateInput(attrs={'class': 'form-control', 'placeholder': 'Format - DD/MM/YYYY'}),
+                                       error_messages={'invalid': 'Enter a valid date in the format DD/MM/YYYY'})
+    datePurchased = forms.DateField(input_formats=["%d/%m/%Y"], label="Date Purchased", widget=forms.DateInput(attrs={'class': 'form-control', 'placeholder': 'Format - DD/MM/YYYY'}),
+                                    error_messages={'invalid': 'Enter a valid date in the format DD/MM/YYYY'})
+    vin = forms.CharField(max_length=17, min_length=17,label="VIN Number", widget=forms.TextInput(attrs={'class': 'form-control'}),
+                          error_messages={'invalid': 'Enter a valid VIN number'})
     Manufacturer = forms.CharField(max_length=100, label="Manufacturer", widget=forms.TextInput(attrs={'class': 'form-control'}))
     partsList = forms.CharField(max_length=255, label="Parts List", widget=forms.Textarea(attrs={"cols": 40, "rows": 6, 'class': 'form-control'}))
     Location = forms.CharField(max_length=100, label="Location", widget=forms.TextInput(attrs={'class': 'form-control'}))
@@ -244,6 +280,18 @@ class createHeavyVehicleForm(ModelForm):
     inTransport = forms.BooleanField(label="Currently In Use", required=False)
     interFarmTransport = forms.BooleanField(label="Inter-Farm Transport", required=False)
     assetImage = forms.ImageField(label="Image", required=False, initial=r"images/asset_images/defaultImage.jpg")
+
+    def clean(self):
+        cleaned_data = super().clean()
+        datePurchased = cleaned_data.get('datePurchased')
+
+        if datePurchased != None and datePurchased > datetime.date.today():
+            self._errors["datePurchased"] = ["Date Purchased cannot be in the future."]
+
+        if not super().is_valid():
+            raise forms.ValidationError('Please correct the errors below and resubmit the form.')
+
+        return cleaned_data
 
     class Meta:
         model = heavyVehicle
@@ -297,13 +345,28 @@ class editSmallAssetForm(ModelForm):
             self.fields["assetImage"      ].widget.attrs.update({"class": "form-control"})
 
     assetName = forms.CharField(max_length=100, label="Asset Name", widget=forms.TextInput(attrs={'class': 'form-control'}))
-    dateManufactured = forms.DateField(input_formats=["%d/%m/%Y"], label="Date Manufactured", widget=forms.DateInput(attrs={'class': 'form-control', 'placeholder': 'Format - DD/MM/YYYY'}))
-    datePurchased = forms.DateField(input_formats=["%d/%m/%Y"], label="Date Purchased", widget=forms.DateInput(attrs={'class': 'form-control', 'placeholder': 'Format - DD/MM/YYYY'}))
+    dateManufactured = forms.DateField(input_formats=["%d/%m/%Y"], label="Date Manufactured", widget=forms.DateInput(attrs={'class': 'form-control', 'placeholder': 'Format - DD/MM/YYYY'}),
+                                       error_messages={'invalid': 'Enter a valid date in the format DD/MM/YYYY'})
+    datePurchased = forms.DateField(input_formats=["%d/%m/%Y"], label="Date Purchased", widget=forms.DateInput(attrs={'class': 'form-control', 'placeholder': 'Format - DD/MM/YYYY'}),
+                                    error_messages={'invalid': 'Enter a valid date in the format DD/MM/YYYY'})
     serialNumber = forms.CharField(max_length=100, label="Serial Number", widget=forms.TextInput(attrs={'class': 'form-control'}))
     Manufacturer = forms.CharField(max_length=100, label="Manufacturer", widget=forms.TextInput(attrs={'class': 'form-control'}))
     partsList = forms.CharField(max_length=255, label="Parts List", widget=forms.Textarea(attrs={"cols": 40, "rows": 6, 'class': 'form-control'}))
     Location = forms.CharField(max_length=100, label="Location", widget=forms.TextInput(attrs={'class': 'form-control'}))
     assetImage = forms.ImageField(label="Update Image", required=False)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        datePurchased = cleaned_data.get('datePurchased')
+
+        if datePurchased != None and datePurchased > datetime.date.today():
+            self._errors["datePurchased"] = ["Date Purchased cannot be in the future."]
+
+        if not super().is_valid():
+            raise forms.ValidationError('Please correct the errors below and resubmit the form.')
+
+
+        return cleaned_data
 
     class Meta:
         model = SmallEquipment
@@ -349,13 +412,28 @@ class editLargeAssetForm(ModelForm):
             self.fields["assetImage"      ].widget.attrs.update({"class": "form-control"})
 
     assetName = forms.CharField(max_length=100, label="Asset Name", widget=forms.TextInput(attrs={'class': 'form-control'}))
-    dateManufactured = forms.DateField(input_formats=["%d/%m/%Y"], label="Date Manufactured", widget=forms.DateInput(attrs={'class': 'form-control', 'placeholder': 'Format - DD/MM/YYYY'}))
-    datePurchased = forms.DateField(input_formats=["%d/%m/%Y"], label="Date Purchased", widget=forms.DateInput(attrs={'class': 'form-control', 'placeholder': 'Format - DD/MM/YYYY'}))
-    vin = forms.CharField(max_length=100, label="vin", widget=forms.TextInput(attrs={'class': 'form-control'}))
+    dateManufactured = forms.DateField(input_formats=["%d/%m/%Y"], label="Date Manufactured", widget=forms.DateInput(attrs={'class': 'form-control', 'placeholder': 'Format - DD/MM/YYYY'}),
+                                       error_messages={'invalid': 'Enter a valid date in the format DD/MM/YYYY'})
+    datePurchased = forms.DateField(input_formats=["%d/%m/%Y"], label="Date Purchased", widget=forms.DateInput(attrs={'class': 'form-control', 'placeholder': 'Format - DD/MM/YYYY'}),
+                                    error_messages={'invalid': 'Enter a valid date in the format DD/MM/YYYY'})
+    vin = forms.CharField(max_length=17, min_length=17,label="VIN Number", widget=forms.TextInput(attrs={'class': 'form-control'}),
+                          error_messages={'invalid': 'Enter a valid VIN number'})
     Manufacturer = forms.CharField(max_length=100, label="Manufacturer", widget=forms.TextInput(attrs={'class': 'form-control'}))
     partsList = forms.CharField(max_length=255, label="Parts List", widget=forms.Textarea(attrs={"cols": 40, "rows": 6, 'class': 'form-control'}))
     Location = forms.CharField(max_length=100, label="Location", widget=forms.TextInput(attrs={'class': 'form-control'}))
     assetImage = forms.ImageField(label="Update Image", required=False)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        datePurchased = cleaned_data.get('datePurchased')
+                
+        if datePurchased != None and datePurchased > datetime.date.today():
+            self._errors["datePurchased"] = ["Date Purchased cannot be in the future."]
+
+        if not super().is_valid():
+            raise forms.ValidationError('Please correct the errors below and resubmit the form.')
+
+        return cleaned_data
 
     class Meta:
         model = LargeEquipment
@@ -406,15 +484,32 @@ class editLightVehicleForm(ModelForm):
             self.fields["assetImage"      ].widget.attrs.update({"class": "form-control"})
 
     assetName = forms.CharField(max_length=100, label="Asset Name", widget=forms.TextInput(attrs={'class': 'form-control'}))
-    dateManufactured = forms.DateField(input_formats=["%d/%m/%Y"], label="Date Manufactured", widget=forms.DateInput(attrs={'class': 'form-control', 'placeholder': 'Format - DD/MM/YYYY'}))
-    datePurchased = forms.DateField(input_formats=["%d/%m/%Y"], label="Date Purchased", widget=forms.DateInput(attrs={'class': 'form-control', 'placeholder': 'Format - DD/MM/YYYY'}))
-    vin = forms.CharField(max_length=100, label="vin", widget=forms.TextInput(attrs={'class': 'form-control'}))
+    dateManufactured = forms.DateField(input_formats=["%d/%m/%Y"], label="Date Manufactured", widget=forms.DateInput(attrs={'class': 'form-control', 'placeholder': 'Format - DD/MM/YYYY'}),
+                                       error_messages={'invalid': 'Enter a valid date in the format DD/MM/YYYY'})
+    datePurchased = forms.DateField(input_formats=["%d/%m/%Y"], label="Date Purchased", widget=forms.DateInput(attrs={'class': 'form-control', 'placeholder': 'Format - DD/MM/YYYY'}),
+                                    error_messages={'invalid': 'Enter a valid date in the format DD/MM/YYYY'})
+    vin = forms.CharField(max_length=17, min_length=17,label="VIN Number", widget=forms.TextInput(attrs={'class': 'form-control'}),
+                          error_messages={'invalid': 'Enter a valid VIN number'})
     Manufacturer = forms.CharField(max_length=100, label="Manufacturer", widget=forms.TextInput(attrs={'class': 'form-control'}))
     partsList = forms.CharField(max_length=255, label="Parts List", widget=forms.Textarea(attrs={"cols": 40, "rows": 6, 'class': 'form-control'}))
     Location = forms.CharField(max_length=100, label="Location", widget=forms.TextInput(attrs={'class': 'form-control'}))
     Registration = forms.CharField(max_length=100, label="Registration", widget=forms.TextInput(attrs={'class': 'form-control'}))
     currentlyInUse = forms.BooleanField(label="Currently In Use", required=False)
     assetImage = forms.ImageField(label="Update Image", required=False)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        dateManufactured = cleaned_data.get('dateManufactured')
+        datePurchased = cleaned_data.get('datePurchased')
+                
+        if datePurchased != None and datePurchased > datetime.date.today():
+            self._errors["datePurchased"] = ["Date Purchased cannot be in the future."]
+
+        if not super().is_valid():
+            raise forms.ValidationError('Please correct the errors below and resubmit the form.')
+
+
+        return cleaned_data
 
     class Meta:
         model = lightVehicle
@@ -468,9 +563,12 @@ class editHeavyVehicleForm(ModelForm):
             self.fields["assetImage"        ].widget.attrs.update({"class": "form-control"})
 
     assetName = forms.CharField(max_length=100, label="Asset Name", widget=forms.TextInput(attrs={'class': 'form-control'}))
-    dateManufactured = forms.DateField(input_formats=["%d/%m/%Y"], label="Date Manufactured", widget=forms.DateInput(attrs={'class': 'form-control', 'placeholder': 'Format - DD/MM/YYYY'}))
-    datePurchased = forms.DateField(input_formats=["%d/%m/%Y"], label="Date Purchased", widget=forms.DateInput(attrs={'class': 'form-control', 'placeholder': 'Format - DD/MM/YYYY'}))
-    vin = forms.CharField(max_length=100, label="VIN Number", widget=forms.TextInput(attrs={'class': 'form-control'}))
+    dateManufactured = forms.DateField(input_formats=["%d/%m/%Y"], label="Date Manufactured", widget=forms.DateInput(attrs={'class': 'form-control', 'placeholder': 'Format - DD/MM/YYYY'}),
+                                       error_messages={'invalid': 'Enter a valid date in the format DD/MM/YYYY'})
+    datePurchased = forms.DateField(input_formats=["%d/%m/%Y"], label="Date Purchased", widget=forms.DateInput(attrs={'class': 'form-control', 'placeholder': 'Format - DD/MM/YYYY'}),
+                                    error_messages={'invalid': 'Enter a valid date in the format DD/MM/YYYY'})
+    vin = forms.CharField(max_length=17, min_length=17, label="VIN Number", widget=forms.TextInput(attrs={'class': 'form-control'}),
+                          error_messages={'invalid': 'Enter a valid VIN number'})
     Manufacturer = forms.CharField(max_length=100, label="Manufacturer", widget=forms.TextInput(attrs={'class': 'form-control'}))
     partsList = forms.CharField(max_length=255, label="Parts List", widget=forms.Textarea(attrs={"cols": 40, "rows": 6, 'class': 'form-control'}))
     Location = forms.CharField(max_length=100, label="Location", widget=forms.TextInput(attrs={'class': 'form-control'}))
@@ -478,6 +576,18 @@ class editHeavyVehicleForm(ModelForm):
     inTransport = forms.BooleanField(label="Currently In Use", required=False),
     interFarmTransport = forms.BooleanField(label="Currently In Use", required=False)
     assetImage = forms.ImageField(label="Update Image", required=False)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        datePurchased = cleaned_data.get('datePurchased')
+        
+        if datePurchased != None and datePurchased > datetime.date.today():
+            self._errors["datePurchased"] = ["Date Purchased cannot be in the future."]
+
+        if not super().is_valid():
+            raise forms.ValidationError('Please correct the errors below and resubmit the form.')
+
+        return cleaned_data
 
     class Meta:
         model = heavyVehicle

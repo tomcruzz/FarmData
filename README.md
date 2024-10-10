@@ -1,12 +1,15 @@
 # Agdesk_Farm_Management
 This repository provides the source code for AgDesk Farm Management, a web-based application designed to streamline and optimize farm operations.
 
+**This guide assumes that AgDesk is being configured on a Windows x64 based operating environment**
+
 # Getting Started
 1. Software Dependencies
 2. Setting up the Python Environment
-3. Setting up a Database
-4. Connecting the Database to Agdesk's Environment
-5. Starting the Server and some Common Issues
+3. Configuring the weather API
+4. Setting up a Database
+5. Connecting the Database to Agdesk's Environment
+6. Starting the Server and some Common Issues
 
 
 # Software Dependencies
@@ -18,7 +21,7 @@ PostgreSQL is the relational database management system of choice for the Agdesk
 
 https://www.enterprisedb.com/downloads/postgres-postgresql-downloads
 
-*_This guide assumes that PostGreSQL is being installed on a Windows x64 based operating environment_
+**_This guide assumes that PostGreSQL is being installed on a Windows x64 based operating environment_**
 
 Select the operating system family and architecture for which you intend to download the PostgreSQL package onto **Ensuring that version 16.4 is selected**. 
 
@@ -121,7 +124,31 @@ pip install -r Agdesk_Farm_Management/Package_management/requirements.txt
 ```
 
 Following this the Python Environment has been configured. However, the AgDesk Django evnironment still needs configuration.
-Prior to doing this, a PostgreSQL database must be setup and connected to the AgDesk Environment.
+Prior to doing this, the Weather API that AgDesk interfaces with must be configured and a PostgreSQL database must be setup and connected to the AgDesk Environment.
+
+# Setting up the Weather API Connection
+
+_**NOTE: If one user does not wish to generate an API key and share it with their development team, each user will need to complete this section. The repository is configured to not commit .env files**_
+
+## Account Registration and API key Generation
+To ensure functionality of the weatherAPI which has been integrated into the Agdesk Solution, an account will need to be registered with the OpenWeather Weather API service which can be performed using the following link. https://home.openweathermap.org/users/sign_up
+
+alternatively, the login for the service can be located at https://home.openweathermap.org/users/sign_in
+
+Once logged in to, or registered with the service, the user should navigate to the page titled API keys. In the section
+called Create key, the account owner should provide a key name of their choosing and then click Generate.
+
+## Configuring the API Inside of the AgDesk Environment
+Inside of the project's directory, .\AgDeskDjango, create a file called .env.
+once the .env file has been created, add the following line where <insert_api_key> represents the API key generated in the previous section.
+The API Key must be a string.
+
+```text
+API_KEY="<insert_api_key>"
+```
+
+If the application is used prior to inserting this key, or with a suspended/expired key, weather data will not be obtained
+from the OpenWeather service.
 
 # Setup the Database and Link it to AgDesks Environment
 
@@ -186,7 +213,7 @@ Confirm that the application works by running the following from the root direct
 py .\AgDeskDjango\manage.py runserver
 ```
 
-# Useful Resources
+# Useful  Resources
 
 Django Documentation: https://docs.djangoproject.com/en/5.1/
 

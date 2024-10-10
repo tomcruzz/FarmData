@@ -2,15 +2,17 @@
 Models for UserAuth.
 """
 
-
 # Imports
 from django.contrib.auth.models import AbstractUser, AbstractBaseUser, Group, Permission
 from django.db import models
 from django.db.models.signals import post_migrate
 from django.dispatch import receiver
-from FarmAcc.models import FarmInfo
 from django.utils.text import slugify
+
 from .apps import UserauthConfig
+
+from FarmAcc.models import FarmInfo
+
 
 # Models
 class UserProfile(AbstractUser):
@@ -21,7 +23,7 @@ class UserProfile(AbstractUser):
     firstName   = models.CharField(max_length=200, null=True)
     lastName    = models.CharField(max_length=200, null=True)
     phoneNumber = models.CharField(max_length=200, null=True)
-    farm        = models.ManyToManyField(FarmInfo, related_name='user_profiles', through='user_farm')
+    farm        = models.ManyToManyField(FarmInfo, related_name="user_profiles", through="user_farm")
     currentFarm = models.ForeignKey(null=True, on_delete=models.CASCADE, to=FarmInfo)
 
 
@@ -49,7 +51,7 @@ class SecurityGroup(Group):
         pass
 
 
-# Database Initialisation
+# Database Permissions Initialisation
 @receiver(post_migrate)
 def create_instances(sender, **kwargs):
     """
@@ -68,15 +70,15 @@ def create_instances(sender, **kwargs):
     details can be found on the Notion once that's available.
     """
 
-    # FARM_EMPLOYEE          = SecurityGroup.objects.get_or_create(name='Farm Employee'          )
-    # INVENTORY_MANAGER      = SecurityGroup.objects.get_or_create(name='Inventory Manager'      )
-    # FARM_MANAGER           = SecurityGroup.objects.get_or_create(name='Farm Manager'           )
-    # TEAM_LEADER            = SecurityGroup.objects.get_or_create(name='Team Leader'            )
-    # FARM_OWNER             = SecurityGroup.objects.get_or_create(name='Farm Owner'             )
-    # FLEET_MANAGER          = SecurityGroup.objects.get_or_create(name='Fleet Manager'          )
-    # FARM_OPERATIONS_MANGER = SecurityGroup.objects.get_or_create(name='Farm Operations Manager')
-    # STORAGE_MANAGER        = SecurityGroup.objects.get_or_create(name='Storage Manager'        )
-    # FINANCIAL_CONTROLLER   = SecurityGroup.objects.get_or_create(name='Financial Controller'   )
+    # FARM_EMPLOYEE          = SecurityGroup.objects.get_or_create(name="Farm Employee"          )
+    # INVENTORY_MANAGER      = SecurityGroup.objects.get_or_create(name="Inventory Manager"      )
+    # FARM_MANAGER           = SecurityGroup.objects.get_or_create(name="Farm Manager"           )
+    # TEAM_LEADER            = SecurityGroup.objects.get_or_create(name="Team Leader"            )
+    # FARM_OWNER             = SecurityGroup.objects.get_or_create(name="Farm Owner"             )
+    # FLEET_MANAGER          = SecurityGroup.objects.get_or_create(name="Fleet Manager"          )
+    # FARM_OPERATIONS_MANGER = SecurityGroup.objects.get_or_create(name="Farm Operations Manager")
+    # STORAGE_MANAGER        = SecurityGroup.objects.get_or_create(name="Storage Manager"        )
+    # FINANCIAL_CONTROLLER   = SecurityGroup.objects.get_or_create(name="Financial Controller"   )
 
     # # Assign permissions to groups
     # # https://medium.com/djangotube/django-roles-groups-and-permissions-introduction-a54d1070544#:~:text=What%20are%20permissions%20Permissions%20are%20a%20rule%20%28or,permissions%20to%20specific%20users%20and%20groups%20of%20users.
@@ -84,5 +86,5 @@ def create_instances(sender, **kwargs):
 
     # viewOtherUsersPerm = Permission.objects.get(codename="can_view_other_users")
     # viewOtherUsersPerm.save()
-    # farmOwner = SecurityGroup.objects.get(name='Farm Owner')
+    # farmOwner = SecurityGroup.objects.get(name="Farm Owner")
     # farmOwner.permissions.add(viewOtherUsersPerm)

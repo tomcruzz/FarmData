@@ -7,10 +7,11 @@ from django.forms import ModelForm, HiddenInput
 from django import forms
 
 from .models import OperationLog#, PerformanceMetric, OperationLogMetric
+from .models import LOG_LOCATION_LENGTH, LOG_NOTES_LENGTH
 
 
 # Constants
-NOTES_LABEL = "Notes (Optional)" # Change once, change everywhere
+LOG_NOTES_LABEL = "Notes (Optional)" # Change once, change everywhere
 
 
 # Check Out Check In Forms
@@ -25,9 +26,9 @@ class checkOutForm(ModelForm):
         model  = OperationLog
         fields = ["assetID", "location", "notes"]
 
-    assetID     = forms.IntegerField(label="assetID", widget=HiddenInput())
-    location    = forms.CharField(label="Location",widget=forms.TextInput(attrs={'class': 'form-control'}))
-    notes       = forms.CharField(label=NOTES_LABEL, required=False, widget=forms.Textarea(attrs={"cols": 40, "rows": 6, 'class': 'form-control'}))
+    assetID     = forms.IntegerField(label="assetID"   , widget=HiddenInput())
+    location    = forms.CharField(   label="Location"  , widget=forms.TextInput(attrs={'class': 'form-control'}), max_length=LOG_LOCATION_LENGTH)
+    notes       = forms.CharField(   label=LOG_NOTES_LABEL , widget=forms.Textarea(attrs={"cols": 40, "rows": 6, 'class': 'form-control'}), required=False, max_length=LOG_NOTES_LENGTH)
 
 
 class checkInForm(ModelForm):
@@ -42,7 +43,7 @@ class checkInForm(ModelForm):
         fields = ["logID", "notes"]
 
     logID = forms.IntegerField(widget=HiddenInput())
-    notes = forms.CharField(label=NOTES_LABEL, required=False, widget=forms.Textarea(attrs={"cols": 40, "rows": 6, 'class': 'form-control'}))
+    notes = forms.CharField(label=LOG_NOTES_LABEL, widget=forms.Textarea(attrs={"cols": 40, "rows": 6, 'class': 'form-control'}), required=False, max_length=LOG_NOTES_LENGTH)
 
 
 # Operation Log Forms

@@ -11,9 +11,7 @@ from . import views
 # Patterns
 urlpatterns = [
     path("farm"                             , views.farmSettings  , name="farmSettings"   ),
-    path("org"                              , views.orgSettings   , name="orgSettings"    ),
     path("team_settings"                    , views.teamSettings  , name="team_settings"  ),
-    # path("update-team/<int:team_id>"        , views.teamDetails   , name="team_details"   ),
     path("update-team/<int:team_id>/"       , views.teamDetails   , name="team_details"   ),
     path("deleteTeam/<int:team_id>"         , views.deleteTeam    , name="delete_team"    ),
     path("userManagement"                   , views.userManagement, name="user_management"),

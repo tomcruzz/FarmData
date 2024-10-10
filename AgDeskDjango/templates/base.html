@@ -23,10 +23,10 @@
     <script src="https://unpkg.com/htmx.org@1.9.12"
         integrity="sha384-ujb1lZYygJmzgSwoxRggbCHcjc0rB2XoQrxeTUQyRjrOnlCoYta87iKBWq3EsdM2"
         crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <title>AgDesk</title>
     <link rel="stylesheet" href="{% static 'styling.css' %}" type="text/css">
-    <link rel="stylesheet" href="{% static 'mainDash.css'%}" type="text/css">
-    <script href="{% static 'utils.js'%}"></script>
+    <script src="{% static 'utils.js'%}"></script>
     
     
 </head>
@@ -89,82 +89,92 @@
         </nav>
     </div>
 
-    <div class="d-inline-flex flex-row flex-grow-1 overflow-auto" id="bottomOfPage">
-        <div class="d-flex flex-column align-items-center" id="sidebar-column">
-            <div class="row text-center" id="sidebar-menu-top">
-                <ul class="nav nav-pills nav-flush flex-column text-center mb-auto mt-3">
-                    <li class="dropdown dropend" id="dropdownNav">
-                        <a href="#" class="dropdown" data-bs-toggle="dropdown" role="button" aria-expanded="false">
-                            <img src="/static/Images/team.png" id="dropdownNavIcon">
+    <div id="bottomOfPage" class="d-inline-flex flex-row flex-grow-1 overflow-auto">
+        <div id="sidebar-column" class="d-flex flex-column align-items-center">
+            <div id="sidebar-menu-top" class="w-100">
+                <ul>
+                    <li class="sidebar-item">
+                        <a href="#" class="sidebar-link" data-bs-toggle="collapse" data-bs-target="#teamDropdown">
+                            <img src="/static/Images/team.png" alt="Team" class="sidebar-icon">
+                            <span>Team</span>
+                            <i class="fas fa-chevron-down float-end"></i>
                         </a>
-                        <ul class="dropend dropdown-menu" id="dropdownItem">
-                            <li><a class="dropdown-item" href="{% url 'user_management' %}">User Admin</a></li>
-                            <li><a class="dropdown-item" href="{% url 'team_settings' %}">Team Settings</a></li>
+                        <ul id="teamDropdown" class="collapse list-unstyled">
+                            <li><a href="{% url 'user_management' %}">User Admin</a></li>
+                            <li><a href="{% url 'team_settings' %}">Team Settings</a></li>
                         </ul>
                     </li>
 
-                    <li class="dropdown dropend" id="dropdownNav">
-                        <a href="#" class="dropdown" data-bs-toggle="dropdown" role="button" aria-expanded="false">
-                            <img src="/static/Images/tasks.png" id="dropdownNavIcon">
+                    <li class="sidebar-item">
+                        <a href="#" class="sidebar-link" data-bs-toggle="collapse" data-bs-target="#tasksDropdown">
+                            <img src="/static/Images/tasks.png" alt="Tasks" class="sidebar-icon">
+                            <span>Tasks</span>
+                            <i class="fas fa-chevron-down float-end"></i>
                         </a>
-                        <ul class="dropend dropdown-menu" id="dropdownItem">
-                            <li><a class="dropdown-item" href="/tasks/tableView">Tasks</a></li>
-                            <li><a class="dropdown-item" href="/tasks/kanbanTable">Kanbans</a></li>
+                        <ul id="tasksDropdown" class="collapse list-unstyled">
+                            <li><a href="/tasks/tableView">Tasks</a></li>
+                            <li><a href="/tasks/kanbanTable">Kanbans</a></li>
                         </ul>
                     </li>
 
-                    <li>
-                        <a href="{% url 'fileView' %}" class="nav-link py-3" title="Farm Documents"
-                            data-bs-placement="right" data-bs-original-title="Farm Documents" id="sidebar-icons">
-                            <img src="/static/Images/documents.png">
+                    <li class="sidebar-item">
+                        <a href="{% url 'fileView' %}" class="sidebar-link">
+                            <img src="/static/Images/documents.png" alt="Documents" class="sidebar-icon">
+                            <span>Documents</span>
                         </a>
                     </li>
-                    <li class="dropdown dropend" id="dropdownNav">
-                        <a href="#" class="dropdown" data-bs-toggle="dropdown" role="button" aria-expanded="false">
-                            <img src="/static/Images/checkout.png" id="dropdownNavIcon">
+
+                    <li class="sidebar-item">
+                        <a href="#" class="sidebar-link" data-bs-toggle="collapse" data-bs-target="#checkoutsDropdown">
+                            <img src="/static/Images/checkout.png" alt="Checkouts" class="sidebar-icon">
+                            <span>Checkouts</span>
+                            <i class="fas fa-chevron-down float-end"></i>
                         </a>
-                        <ul class="dropend dropdown-menu" id="dropdownItem">
-                            <li><a class="dropdown-item" href="{% url 'allCheckouts' %}">All Checkouts</a></li>
-                            <li><a class="dropdown-item" href="{% url 'myCheckouts' %}">My Checkouts </a></li>
+                        <ul id="checkoutsDropdown" class="collapse list-unstyled">
+                            <li><a href="{% url 'allCheckouts' %}">All Checkouts</a></li>
+                            <li><a href="{% url 'myCheckouts' %}">My Checkouts</a></li>
                         </ul>
                     </li>
-                    <li class="dropdown dropend" id="dropdownNav">
-                        <a href="#" class="dropdown" data-bs-toggle="dropdown" role="button" aria-expanded="false">
-                            <img src="/static/Images/tractor.png" id="dropdownNavIcon">
+
+                    <li class="sidebar-item">
+                        <a href="#" class="sidebar-link" data-bs-toggle="collapse" data-bs-target="#vehiclesDropdown">
+                            <img src="/static/Images/tractor.png" alt="Vehicles" class="sidebar-icon">
+                            <span>Vehicles</span>
+                            <i class="fas fa-chevron-down float-end"></i>
                         </a>
-                        <ul class="dropend dropdown-menu" id="dropdownItem">
-                            <li><a class="dropdown-item" href="{% url 'displayAssets' 'LV' %}">Standard Vehicles</a>
-                            </li>
-                            <li><a class="dropdown-item" href="{% url 'displayAssets' 'HV' %}">Heavy Vehicles </a></li>
+                        <ul id="vehiclesDropdown" class="collapse list-unstyled">
+                            <li><a href="{% url 'displayAssets' 'LV' %}">Standard Vehicles</a></li>
+                            <li><a href="{% url 'displayAssets' 'HV' %}">Heavy Vehicles</a></li>
                         </ul>
                     </li>
-                    <li class="dropdown dropend" id="dropdownNav">
-                        <a href="#" class="dropdown" data-bs-toggle="dropdown" role="button" aria-expanded="false">
-                            <img src="/static/Images/shovel.png" id="dropdownNavIcon">
+
+                    <li class="sidebar-item">
+                        <a href="#" class="sidebar-link" data-bs-toggle="collapse" data-bs-target="#equipmentDropdown">
+                            <img src="/static/Images/shovel.png" alt="Equipment" class="sidebar-icon">
+                            <span>Equipment</span>
+                            <i class="fas fa-chevron-down float-end"></i>
                         </a>
-                        <ul class="dropend dropdown-menu" id="dropdownItem">
-                            <li><a class="dropdown-item" href="{% url 'displayAssets' 'SE' %}">Small Equipment</a></li>
-                            <li><a class="dropdown-item" href="{% url 'displayAssets' 'LE' %}">Large Equipment </a></li>
+                        <ul id="equipmentDropdown" class="collapse list-unstyled">
+                            <li><a href="{% url 'displayAssets' 'SE' %}">Small Equipment</a></li>
+                            <li><a href="{% url 'displayAssets' 'LE' %}">Large Equipment</a></li>
                         </ul>
+                    </li>
+                
+            
+                    <li class="sidebar-item">
+                        <a href="{% url 'emergencyContacts' %}" class="sidebar-link">
+                            <img src="/static/Images/emergency.png" alt="Emergency" class="sidebar-icon">
+                            <span>Emergency</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="{% url 'farmSettings' %}" class="sidebar-link">
+                            <img src="/static/Images/settingsCog.png" alt="Settings" class="sidebar-icon">
+                            <span>Settings</span>
+                        </a>
                     </li>
                 </ul>
-            </div>
-            <div class="row text-center" id="sidebar-menu-bottom">
-                <ul class="nav mb-auto nav-pills nav-flush flex-column text-center justify-content-end mb-3">
-                    <li class="nav-item">
-                        <a href="{% url 'emergencyContacts' %}" class="nav-link py-3" title="" data-bs-toggle="tooltip"
-                            data-bs-placement="right" data-bs-original-title="Emergency" id="sidebar-icons">
-                            <img src="/static/Images/emergency.png">
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{% url 'farmSettings' %}" class="nav-link py-3" title="" data-bs-toggle="tooltip"
-                            data-bs-placement="right" data-bs-original-title="Legal" id="sidebar-icons">
-                            <img src="/static/Images/settingsCog.png" id="settingsIcon">
-                        </a>
-                    </li>
-                </ul>
-            </div>
+        </div>
         </div>
         <div class="d-flex flex-column" id="CentralPage">
             {% block webpageContent %} https://www.youtube.com/watch?v=dQw4w9WgXcQ {% endblock %}

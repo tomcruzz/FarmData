@@ -6,7 +6,7 @@
 
 <h2> {{currentAsset.assetName}}</h2>
 {% if assetCategory == 'LV' or assetCategory == "HV" %}
-    <p> {{currentAsset.Registration}} </p>
+<p> Registration: {{currentAsset.Registration}} </p>
 {% endif %}
 
 {% if messages %}
@@ -43,6 +43,7 @@
             <!-- Header -->
             <div class="modal-header">
                 <h4 class="modal-title" id="modalTitle">New Maintenance Information</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="closeModal()"></button>
             </div>
             <!-- Body -->
             <div class="modal-body">
@@ -54,9 +55,31 @@
                     </form>
                 </div>
             </div>
+
+            <!-- Lazy way of removing kmsBeforeNextService -->
+            {% if assetCategory == "SE" %}
+                <script>
+                    document.getElementById("div_id_kmsBeforeNextService").parentElement.hidden = true;
+                </script>
+            {% endif %}
         </div>
     </div>
 </div> 
+
+{% if creationForm.errors %}
+<script>
+    // Remove fade class and show modal
+    var modalElement = document.getElementById('newMaintenance');
+    modalElement.classList.remove('fade');
+    var modal = new bootstrap.Modal(modalElement);
+    modal.show();
+
+    function closeModal() {
+        modalElement.classList.add('fade');
+        modal.hide();
+    }
+</script>
+{% endif %}
 
 <!-- Asset Tab Content Config-->
 <div class="tab-content" id="myTabContent">
@@ -77,12 +100,12 @@
             <tbody>
             </tr> <!-- What is this for? -->
             {% for maintenance in maintenanceData %}
-                <tr class="userRowHeight">
-                    <td><a class="asset_detail" href="{% url 'assetMaintenanceDetails' assetCategory=assetCategory assetID=currentAsset.assetID maintenanceID=maintenance.maintenanceID%}">{{maintenance.completionDate}}</a></td>
-                    <td><a class="asset_detail" href="{% url 'assetMaintenanceDetails' assetCategory=assetCategory assetID=currentAsset.assetID maintenanceID=maintenance.maintenanceID%}">{{maintenance.get_maintenaceType_display}}</a></td>
-                    <td><a class="asset_detail" href="{% url 'assetMaintenanceDetails' assetCategory=assetCategory assetID=currentAsset.assetID maintenanceID=maintenance.maintenanceID%}">{{maintenance.Cost}}</a></td>
-                    <td><a class="asset_detail" href="{% url 'assetMaintenanceDetails' assetCategory=assetCategory assetID=currentAsset.assetID maintenanceID=maintenance.maintenanceID%}">{{maintenance.maintenanceConductedBy}}</a></td>
-                    <td><a class="asset_detail" href="{% url 'assetMaintenanceDetails' assetCategory=assetCategory assetID=currentAsset.assetID maintenanceID=maintenance.maintenanceID%}">{{maintenance.Notes}}</a></td>
+                <tr onclick="{go_to_asset_url('{{ assetCategory }}','{{ asset.assetID }}', 'maintenance', maintenanceID='{{ maintenance.maintenanceID }}')}" class="userRowHeight">
+                    <td><a class="asset_detail">{{maintenance.completionDate}}</a></td>
+                    <td><a class="asset_detail">{{maintenance.get_maintenanceType_display}}</a></td>
+                    <td><a class="asset_detail">${{maintenance.Cost}}</a></td>
+                    <td><a class="asset_detail">{{maintenance.maintenanceConductedBy}}</a></td>
+                    <td><a class="asset_detail">{{maintenance.Notes}}</a></td>
                     <td style="display: flex; justify-content: right;">
                         <a class="asset_detail unbuttonize" href="{% url 'assetMaintenanceDetails' assetCategory=assetCategory assetID=currentAsset.assetID maintenanceID=maintenance.maintenanceID%}"><img style="  max-width:33px; max-height:33px;" src="{% static 'Images/editIcon.png'%}"></a>
 

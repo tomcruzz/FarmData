@@ -11,34 +11,32 @@
 
 <h3>{{ current_datetime | date:datetime_format  }}</h3>
 
-
 <form method="POST">
     {% csrf_token %}
 
     <div class="form-row">
-            {{ form.timezone|as_crispy_field }}
+        {{ form.timezone|as_crispy_field }}
     </div>
     <div class="form-row">
-            {{ form.datetime_format|as_crispy_field }}
+        {{ form.datetime_format|as_crispy_field }}
     </div>
     <div class="form-row">
-           <h3> Units of Measurement </h3>
+        <h3> Units of Measurement </h3>
     </div>
     <div class="form-row">
-            {{ form.temperature_label|as_crispy_field }}
+        {{ form.temperature_label|as_crispy_field }}
     </div>
     <div class="form-row">
-            {{ form.mass_label|as_crispy_field }}
+        {{ form.mass_label|as_crispy_field }}
     </div>
     <div class="form-row">
-            {{ form.area_label|as_crispy_field }}
+        {{ form.area_label|as_crispy_field }}
     </div>
     <div class="form-row">
-            {{ form.length_label|as_crispy_field }}
+        {{ form.length_label|as_crispy_field }}
     </div>
-    
-    <button type="submit">Submit</button>
 
+    <button type="submit">Submit</button>
 </form>
 
 {% endblock %}

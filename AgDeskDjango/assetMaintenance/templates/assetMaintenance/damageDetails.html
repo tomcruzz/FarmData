@@ -8,7 +8,7 @@
 <h2> {{ currentAsset.assetName }}</h2>
 
 {% if assetCategory == 'LV' or assetCategory == "HV" %}
-    <p> {{ currentAsset.Registration }} </p>
+    <p> Registration: {{currentAsset.Registration}} </p>
 {% endif %}
 
 {% if messages %}
@@ -38,11 +38,19 @@
     </li>
 </ul>
 
+{% if maintenanceRecord != None %}
+<br>
+<p style="font-weight: bolder;"> This damage is resolved: 
+    <a href ="{% url 'assetMaintenanceDetails' assetCategory=assetCategory assetID=damageRecord.assetID_id maintenanceID=maintenanceRecord.maintenanceID%}">
+        {{maintenanceRecord.maintenanceTasksCompleted}} ({{maintenanceRecord.completionDate}})</a></p>
+{% else %}
+<br>
+{% endif %}
+
 <!-- Asset Tab Content Config-->
 <div class="tab-content" id="myTabContent">
     <!-- Config for Asset Details form rendering -->
     <div class="tab-pane fade show active" id="assetDetails" role="tabpanel" aria-labelledby="asset-details">
-        <br>
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             {% crispy form %}

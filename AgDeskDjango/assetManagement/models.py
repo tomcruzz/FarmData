@@ -51,14 +51,14 @@ class LargeEquipment(asset):
     vin = models.CharField(max_length=100, null=False)
 
 #These need refactoring
-
+#The following classes are no longer used in the current build of this app and can be removed in future.
 class lightVehicle(vehicle):
     """
     Light Vehicle Class
     A Light Vehicle is any passenger vehicle such as a utility, sedan, or small truck.
     """
 
-    currentlyInUse = models.BooleanField() # Remove?
+    currentlyInUse = models.BooleanField()
 
 
 class heavyVehicle(vehicle):

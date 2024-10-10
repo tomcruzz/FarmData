@@ -15,6 +15,5 @@ urlpatterns = [
     path('getLayout/'        , views.get_layout     , name='getLayout'      ),
     path('deleteWidget'      , views.delete_widget  , name='deleteWidget'   ),
     path('update_my_tasks/'  , views.update_my_tasks, name='update_my_tasks'),
-    path('dashboard/checkin/', views.checkin, name='dashboard_checkin'),
     path('dashboard/get_my_checkouts/', views.get_my_checkouts, name='get_my_checkouts'),
 ]

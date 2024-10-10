@@ -33,7 +33,7 @@ class updateContactForm(ModelForm):
 # ContactInfo Forms
 class createFieldForm(ModelForm):
     contact_method = forms.ChoiceField(label="Contact Method", choices=ContactInfo.FIELD_CHOICES)
-    contact_info   = forms.CharField(label="Contact Information", max_length=64)
+    contact_info   = forms.CharField(label="Contact Information", max_length=64, required=True)
 
     class Meta:
         model  = ContactInfo

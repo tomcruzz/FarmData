@@ -4,11 +4,12 @@
 {% load crispy_forms_tags %}
 
 <link rel="stylesheet" href="{% static 'tableStyling.css'%}">
+<script src="/static/conditionalField.js"></script>
 
 <h2> {{ currentAsset.assetName }}</h2>
 
 {% if assetCategory == 'LV' or assetCategory == "HV" %}
-    <p> {{ currentAsset.Registration }} </p>
+<p> Registration: {{currentAsset.Registration}} </p>
 {% endif %}
 
 {% if messages %}
@@ -22,10 +23,10 @@
 <!-- Asset Tab Menu Config -->
 <ul class="nav nav-tabs" id="myTab" role="tablist">
     <li class="nav-link">
-      <a href="{% url 'assetDetails' assetCategory=assetCategory assetID=currentAsset.assetID %}">Details</a>
+        <a href="{% url 'assetDetails' assetCategory=assetCategory assetID=currentAsset.assetID %}">Details</a>
     </li>
     <li class="nav-link"> 
-      <a href = "{% url 'assetMaintenance' assetCategory=assetCategory assetID=currentAsset.assetID %}">Maintenance</a>
+        <a href = "{% url 'assetMaintenance' assetCategory=assetCategory assetID=currentAsset.assetID %}">Maintenance</a>
     </li>
     <li class="nav-link">
         <a href = "{% url 'assetDamage' assetCategory=assetCategory assetID=currentAsset.assetID %}">Damage</a>
@@ -34,7 +35,7 @@
         <a href = "{% url 'assetExpenses' assetCategory=assetCategory assetID=currentAsset.assetID %}">Expenses</a>
     </li>
     <li class="nav-link">
-      <a href = "{% url 'assetLogs' assetCategory=assetCategory assetID=currentAsset.assetID %}">Logs</a>
+        <a href = "{% url 'assetLogs' assetCategory=assetCategory assetID=currentAsset.assetID %}">Logs</a>
     </li>
 </ul>
 

@@ -2,11 +2,14 @@
 {% load static %}
 {% block webpageContent %} 
 {% load crispy_forms_tags %}
-<link rel="stylesheet" href="{% static "tableStyling.css"%}">
+
+
+<link rel="stylesheet" href="{% static 'tableStyling.css'%}">
+<script src="/static/conditionalField.js"></script>
 
 <h2> {{currentAsset.assetName}}</h2>
 {% if assetCategory == 'LV' or assetCategory == "HV" %}
-    <p> {{currentAsset.Registration}} </p>
+<p> Registration: {{currentAsset.Registration}} </p>
 {% endif %}
 
 {% if messages %}
@@ -43,6 +46,7 @@
             <!-- Header -->
             <div class="modal-header">
                 <h4 class="modal-title" id="modalTitle">New Expense Information</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="closeModal()"></button>
             </div>
             <!-- Body -->
             <div class="modal-body">
@@ -56,6 +60,21 @@
         </div>
     </div>
 </div> 
+
+{% if creationForm.errors %}
+<script>
+    // Remove fade class and show modal
+    var modalElement = document.getElementById('newExpense');
+    modalElement.classList.remove('fade');
+    var modal = new bootstrap.Modal(modalElement);
+    modal.show();
+
+    function closeModal() {
+        modalElement.classList.add('fade');
+        modal.hide();
+    }
+</script>
+{% endif %}
 
 <!-- Asset Tab Content Config-->
 <div class="tab-content" id="myTabContent">
@@ -74,11 +93,11 @@
         
             <tbody>
             {% for expense in expenseData %}
-                <tr class="userRowHeight">
-                    <td><a class="asset_detail" href="{% url 'viewSingleAssetExpense' assetCategory=assetCategory assetID=currentAsset.assetID expenseID=expense.expenseID %}">{{expense.get_expenseType_display}}</a></td>
-                    <td><a class="asset_detail" href="{% url 'viewSingleAssetExpense' assetCategory=assetCategory assetID=currentAsset.assetID expenseID=expense.expenseID %}">{{expense.cost}}</a></td>
-                    <td><a class="asset_detail" href="{% url 'viewSingleAssetExpense' assetCategory=assetCategory assetID=currentAsset.assetID expenseID=expense.expenseID %}">{{expense.receiptNumber}}</a></td>
-                    <td><a class="asset_detail" href="{% url 'viewSingleAssetExpense' assetCategory=assetCategory assetID=currentAsset.assetID expenseID=expense.expenseID %}">{{expense.expenseLodgedBy.username}}</a></td>
+                <tr onclick="{go_to_asset_url('{{ assetCategory }}','{{ asset.assetID }}', 'expenses', expenseID='{{ expense.expenseID }}')}" class="userRowHeight">
+                    <td><a class="asset_detail">{{expense.get_expenseType_display}}</a></td>
+                    <td><a class="asset_detail">${{expense.cost}}</a></td>
+                    <td><a class="asset_detail">{{expense.receiptNumber}}</a></td>
+                    <td><a class="asset_detail">{{expense.expenseLodgedBy.username}}</a></td>
                     <td style="display: flex; justify-content: right;">
                         <a class="asset_detail unbuttonize" href="{% url 'viewSingleAssetExpense' assetCategory=assetCategory assetID=currentAsset.assetID expenseID=expense.expenseID %}"><img style="  max-width:33px; max-height:33px;" src="{% static 'Images/editIcon.png'%}"></a>
 

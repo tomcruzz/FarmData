@@ -132,6 +132,7 @@ class weatherWidgetWeek(Widget):
     row       = 1
 
     def set_data(self, user = None, weatherData = None):
+        if weatherData != None:
             self.data = [
                 {'label': day_data['day'], 
                  'value': 
@@ -143,6 +144,16 @@ class weatherWidgetWeek(Widget):
                 for day_data in weatherData
             ]
             return self.data
+        else:
+            self.data = [
+                {'label': "Could Not Obtain Weather Data", 
+                 'value': 
+                 {
+                    'maxTemp': "N/A",
+                    'minTemp': "N/A",
+                    'weatherIcon': "N/A"
+                }}
+            ]
 
     def get_context(self):
         return {

@@ -8,6 +8,13 @@ from datetime import datetime
 from django.db import models
 
 
+# Constants
+LOG_LOCATION_LENGTH = 64
+LOG_NOTES_LENGTH = 256
+
+METRIC_NAME_LENGTH = 32
+
+
 # Check Out Check In & Operation Log Model
 class OperationLog(models.Model):
     logID         = models.AutoField(primary_key=True)
@@ -17,8 +24,8 @@ class OperationLog(models.Model):
     startDateTime = models.DateTimeField(default=datetime.now)
     endDateTime   = models.DateTimeField(null=True, blank=True)
 
-    location      = models.CharField(max_length=64)
-    notes         = models.CharField(max_length=256, null=True, blank=True)
+    location      = models.CharField(max_length=LOG_LOCATION_LENGTH)
+    notes         = models.CharField(max_length=LOG_NOTES_LENGTH, null=True, blank=True)
     deleted       = models.BooleanField(default=False)
 
 # Foreign key on_delete should probably be SET() or DO_NOTHING for logs. Logs can outlast assets.
@@ -29,7 +36,7 @@ class PerformanceMetric(models.Model):
     metricID    = models.AutoField(primary_key=True)
     assetID     = models.ForeignKey("assetManagement.asset", on_delete=models.CASCADE)
 
-    name        = models.CharField(max_length=32)
+    name        = models.CharField(max_length=METRIC_NAME_LENGTH)
     deleted     = models.BooleanField(default=False)
 
 

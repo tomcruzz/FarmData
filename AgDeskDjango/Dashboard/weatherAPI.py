@@ -13,10 +13,6 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 import numpy as np
 
-# Store your out of date variables as constants up here instead of hardcoding them in the code.
-CUR_TTL = 1
-FOR_TTL = 6
-
 class WeatherManager:
     def __init__(self):
         load_dotenv()
@@ -48,21 +44,24 @@ class WeatherManager:
         
         :param geographicLocation: The location of the farm
         """
-        
-        weatherData = ForecastTable.objects.get(geographicLocation=geographicLocation, forecastOffsetHours=0)
-        retrievalTime = RetrievalTimes.objects.get(geographicLocation=geographicLocation).currentWeatherRetrieval
-        return {
-            'retrievalTime': retrievalTime.time().strftime("%I:%M %p"),
-            'geographicLocation': weatherData.geographicLocation_id,
-            'currentTemp': self.convertFromKelvin(weatherData.temperature),
-            'feelsLike': self.convertFromKelvin(weatherData.feelsLike),
-            'humidity': weatherData.humidity,
-            'sunrise': datetime.fromtimestamp(weatherData.sunrise).time().strftime("%I:%M %p"),
-            'sunset': datetime.fromtimestamp(weatherData.sunset).time().strftime("%I:%M %p"),
-            'weather': weatherData.weather,
-            'description': (weatherData.weatherDescription).title(),
-            "weatherIcon": f"https://openweathermap.org/img/wn/{weatherData.weatherIcon}@2x.png",
-        }
+        try:
+            weatherData = ForecastTable.objects.get(geographicLocation=geographicLocation, forecastOffsetHours=0)
+            retrievalTime = RetrievalTimes.objects.get(geographicLocation=geographicLocation).currentWeatherRetrieval
+            return {
+                'retrievalTime': retrievalTime.time().strftime("%I:%M %p"),
+                'geographicLocation': weatherData.geographicLocation_id,
+                'currentTemp': self.convertFromKelvin(weatherData.temperature),
+                'feelsLike': self.convertFromKelvin(weatherData.feelsLike),
+                'humidity': weatherData.humidity,
+                'sunrise': datetime.fromtimestamp(weatherData.sunrise).time().strftime("%I:%M %p"),
+                'sunset': datetime.fromtimestamp(weatherData.sunset).time().strftime("%I:%M %p"),
+                'weather': weatherData.weather,
+                'description': (weatherData.weatherDescription).title(),
+                "weatherIcon": f"https://openweathermap.org/img/wn/{weatherData.weatherIcon}@2x.png",
+            }
+        #Enable Graceful Failure of Current Weather Widget when data cannot be obtained.
+        except:
+            {"error": "Current Weather Data could not be obtained at this time."}
     
     def fiveDayForecastWidget(self, geographicLocation):
         """
@@ -70,30 +69,33 @@ class WeatherManager:
         
         :param geographicLocation: The location of the farm
         """
-        today = datetime.today()
-        days = {0: today.strftime("%a"), 1: (today + timedelta(days=1)).strftime("%a"), 2: (today + timedelta(days=2)).strftime("%a"), 3: (today + timedelta(days=3)).strftime("%a"), 4: (today + timedelta(days=4)).strftime("%a")}
-        weatherData = []
-        for day in range(5):
-            minTemp = np.inf
-            maxTemp = -(np.inf)
-            start_hour = day * 24
-            end_hour = (day + 1) * 24
-            day_data = ForecastTable.objects.filter(
-            geographicLocation=geographicLocation,
-            forecastOffsetHours__gt=start_hour,
-            forecastOffsetHours__lte=end_hour
-            )
-            for data in day_data:
-                if data.temperatureMax > maxTemp:
-                    maxTemp = data.temperatureMax
-                if data.temperatureMin < minTemp:
-                    minTemp = data.temperatureMin
-            weatherData.append({'day':days[day], 'maxTemp': self.convertFromKelvin(maxTemp), 'minTemp': self.convertFromKelvin(minTemp), 'weatherIcon': f"https://openweathermap.org/img/wn/{day_data[4].weatherIcon}@2x.png"})
-        return weatherData
+        try:
+            today = datetime.today()
+            days = {0: today.strftime("%a"), 1: (today + timedelta(days=1)).strftime("%a"), 2: (today + timedelta(days=2)).strftime("%a"), 3: (today + timedelta(days=3)).strftime("%a"), 4: (today + timedelta(days=4)).strftime("%a")}
+            weatherData = []
+            for day in range(5):
+                minTemp = np.inf
+                maxTemp = -(np.inf)
+                start_hour = day * 24
+                end_hour = (day + 1) * 24
+                day_data = ForecastTable.objects.filter(
+                geographicLocation=geographicLocation,
+                forecastOffsetHours__gt=start_hour,
+                forecastOffsetHours__lte=end_hour
+                )
+                for data in day_data:
+                    if data.temperatureMax > maxTemp:
+                        maxTemp = data.temperatureMax
+                    if data.temperatureMin < minTemp:
+                        minTemp = data.temperatureMin
+                weatherData.append({'day':days[day], 'maxTemp': self.convertFromKelvin(maxTemp), 'minTemp': self.convertFromKelvin(minTemp), 'weatherIcon': f"https://openweathermap.org/img/wn/{day_data[4].weatherIcon}@2x.png"})
+            return weatherData
+        # To enabled graceful failure of widgets on Dashboard in the event no 
+        except:
+            return {"error": "Forecast Weather Data could not be obtained at this time."}
 
     
     
-    #Maybe make this so that if the user doesn't give arguments -> make it take return None.
     #an improvement could be to make the default the capital city of the state the user farm is in.
     def getCurrLocation(self, location=["Bribie", "QLD", "AU"], limit=1):
         """
@@ -127,7 +129,10 @@ class WeatherManager:
             Location.objects.create(**coords)
             return coords
         except requests.RequestException as e:
-            return JsonResponse({'error': str(e)}, status=500)
+            return {
+                    "error": str(e),
+                    "status": 500
+                    }   
         
     def callWeatherEndpoints(self, location, currentWeather = True):
         """
@@ -149,7 +154,10 @@ class WeatherManager:
             weather_data = response.json()
             return weather_data
         except requests.RequestException as e:
-            return JsonResponse({'error': str(e)}, status=500)
+            return {
+                    "error": str(e),
+                    "status": 500
+                    }       
             
                     
     def processCurrWeatherEndpoint(self, farmLocation, location = {"lat": -27.4698, "lon": 153.0251}):
@@ -321,10 +329,13 @@ class WeatherManager:
         Location is hardcoded as Bribie at the moment. When the Google API address picker is implemented, update the location to the farm location.
         """
         location = self.getCurrLocation(location)
-
-        currWeather = self.getCurrentWeather(location)
+        if "error" in location:
+            return {"error": "AgDesk encountered an error and couldn't obtain weather data, please try again later."}
         
-        finalFore = self.getForecastWeather(location)
+        else:
+            currWeather = self.getCurrentWeather(location)
+            
+            finalFore = self.getForecastWeather(location)
 
         return currWeather, finalFore
                 

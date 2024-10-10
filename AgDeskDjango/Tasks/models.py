@@ -71,6 +71,3 @@ class KanbanContents(models.Model):
     kanbanID         = models.ForeignKey(Kanban, on_delete=models.CASCADE)
     taskID           = models.ForeignKey(Task, on_delete=models.CASCADE)
     order            = models.PositiveSmallIntegerField()
-
-# There used to be a whole labelling system designed for the tasks and kanbans, but it was
-# overcomplicated and scrapped.

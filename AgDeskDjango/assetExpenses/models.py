@@ -13,9 +13,9 @@ expenseChoices = {
 
 class Expense(models.Model):
     expenseID       = models.AutoField(primary_key=True)
-    assetID         = models.ForeignKey(asset, on_delete=models.CASCADE, null=False)
+    assetID         = models.ForeignKey(asset, on_delete=models.CASCADE, null=False) # Definitely should not be CASCADE
     expenseType     = models.SmallIntegerField(choices=expenseChoices, default=0)
-    MaintenanceID   = models.ForeignKey(Maintenance, on_delete=models.CASCADE)
+    MaintenanceID   = models.ForeignKey(Maintenance, on_delete=models.CASCADE, null=True)
     cost            = models.DecimalField(max_digits=10, decimal_places=2)
     receiptNumber   = models.PositiveIntegerField(null=False)
     expenseLodgedBy = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
@@ -23,4 +23,3 @@ class Expense(models.Model):
 
     def __str__(self):
         return f"{str(self.expenseID)} - {self.expenseType}"
-

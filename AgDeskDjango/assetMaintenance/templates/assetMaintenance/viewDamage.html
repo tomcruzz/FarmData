@@ -6,7 +6,7 @@
 
 <h2>{{currentAsset.assetName}}</h2>
 {% if assetCategory == 'LV' or assetCategory == "HV" %}
-<p> {{currentAsset.Registration}} </p>
+<p> Registration: {{currentAsset.Registration}} </p>
 {% endif %}
 
 {% if messages%}
@@ -43,6 +43,7 @@
             <!-- Header -->
             <div class="modal-header">
                 <h4 class="modal-title" id="modalTitle">New Damage Information</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="closeModal()"></button>
             </div>
             <!-- Body -->
             <div class="modal-body">
@@ -58,6 +59,21 @@
     </div>
 </div>
 
+{% if creationForm.errors %}
+<script>
+    // Remove fade class and show modal
+    var modalElement = document.getElementById('newDamage');
+    modalElement.classList.remove('fade');
+    var modal = new bootstrap.Modal(modalElement);
+    modal.show();
+
+    function closeModal() {
+        modalElement.classList.add('fade');
+        modal.hide();
+    }
+</script>
+{% endif %}
+
 <!-- Asset Tab Content Config -->
 <div class="tab-content" id="myTabContent">
     <!-- Config for Damage Details form rendering -->
@@ -69,31 +85,20 @@
                     <th scope='col'>Severity</th>
                     <th scope='col'>Notes</th>
                     <th scope='col'>Scheduled Maintenance Date</th>
+                    <th scope='col'>Status</th>
                     <th scope='col'><button data-bs-toggle="modal" data-bs-target="#newDamage"
                             class="btn custom-button">Record Damage</button></th>
                 </tr>
             </thead>
 
             <tbody>
-                </tr> <!-- What is this for? -->
                 {% for damage in damageData %}
-                <tr>
-                    <td><a class="asset_detail"
-                            href="{% url 'assetDamageDetails' assetCategory=assetCategory assetID=currentAsset.assetID damageID=damage.damageID %}"
-                            >{{damage.damageType}}</a>
-                    </td>
-                    <td><a class="asset_detail"
-                            href="{% url 'assetDamageDetails' assetCategory=assetCategory assetID=currentAsset.assetID damageID=damage.damageID %}"
-                            >{{damage.get_damageSeverity_display}}</a>
-                    </td>
-                    <td><a class="asset_detail"
-                            href="{% url 'assetDamageDetails' assetCategory=assetCategory assetID=currentAsset.assetID damageID=damage.damageID %}"
-                            >{{damage.notes}}</a>
-                    </td>
-                    <td><a class="asset_detail"
-                            href="{% url 'assetDamageDetails' assetCategory=assetCategory assetID=currentAsset.assetID damageID=damage.damageID%}"
-                            >{{damage.scheduledMaintenanceDate}}</a>
-                    </td>
+                <tr onclick="{go_to_asset_url('{{ assetCategory }}','{{ asset.assetID }}', 'damage', damageID='{{ damage.damageID }}')}" class="userRowHeight">
+                    <td><a class="asset_detail">{{damage.damageType}}</a></td>
+                    <td><a class="asset_detail">{{damage.damageSeverity}}</a></td>
+                    <td><a class="asset_detail">{{damage.notes}}</a></td>
+                    <td><a class="asset_detail">{{damage.scheduledMaintenanceDate}}</a></td>
+                    <td><a class="asset_detail">{{damage.status}}</a></td>
                     <td style="display: flex; justify-content: right;">
                         <a class="asset_detail unbuttonize"
                             href="{% url 'assetDamageDetails' assetCategory=assetCategory assetID=currentAsset.assetID damageID=damage.damageID%}"

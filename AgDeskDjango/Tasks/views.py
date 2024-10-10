@@ -2,16 +2,12 @@
 Views for the task and kanban board functionality.
 """
 
-
 # Imports
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-# from django.contrib.sessions.models import Session
-# from django.db.models import Q
 from django.forms.models import model_to_dict
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, redirect
-# from django.urls import reverse
-# from django.views import View
 from django.forms.models import model_to_dict
 
 from UserAuth.models import UserProfile
@@ -19,8 +15,8 @@ from UserAuth.models import UserProfile
 from .forms import createTaskForm, taskForm, createKanbanForm, deleteKanbanForm, createKanbanContentForm, updateKanbanContentForm
 from .models import Task, Kanban, KanbanContents
 
-# from datetime import datetime
 import json
+
 
 # Task Manager
 class taskManager():
@@ -34,41 +30,41 @@ class taskManager():
         Returns the tasks assigned to the current user
         """
 
-        tasks = Task.objects \
+        tasks = Task.objects                                                      \
             .filter(assignedTo=user.id, isDeleted=False, farmID=user.currentFarm) \
-            .values() \
-            .order_by('dueDate')
+            .values()                                                             \
+            .order_by("dueDate")
 
         if len(tasks) == 0:
             return ""
 
         for i, t in enumerate(tasks):
             try:
-                tasks[i]['status'] = Task.TASK_STATUS_CHOICES[t['status']][1]
-                tasks[i]['dueDate'] = tasks[i]['dueDate'].strftime("%d/%m/%Y")
+                tasks[i]["status" ] = Task.TASK_STATUS_CHOICES[t["status"]][1]
+                tasks[i]["dueDate"] = tasks[i]["dueDate"].strftime("%d/%m/%Y")
             except IndexError as err:
                 print(err)
                 return ""
 
         return tasks
-    
+
     def getTasksByDate(self, user, date):
         """
         Returns the tasks assigned to the current user
         """
 
-        tasks = Task.objects \
-            .filter(assignedTo=user.id, isDeleted=False, farmID=user.currentFarm, dueDate = date) \
-            .values() \
-            .order_by('dueDate')
+        tasks = Task.objects                                                                    \
+            .filter(assignedTo=user.id, isDeleted=False, farmID=user.currentFarm, dueDate=date) \
+            .values()                                                                           \
+            .order_by("dueDate")
 
         if len(tasks) == 0:
             return ""
 
         for i, t in enumerate(tasks):
             try:
-                tasks[i]['status'] = Task.TASK_STATUS_CHOICES[t['status']][1]
-                tasks[i]['dueDate'] = tasks[i]['dueDate'].strftime("%d/%m/%Y")
+                tasks[i]["status" ] = Task.TASK_STATUS_CHOICES[t["status"]][1]
+                tasks[i]["dueDate"] = tasks[i]["dueDate"].strftime("%d/%m/%Y")
             except IndexError as err:
                 print(err)
                 return ""
@@ -86,11 +82,10 @@ class taskManager():
         if taskData["assignedTo"] == "":
             taskData["assignedTo"] = request.user.id
 
-        Task.objects.create(**taskData)
+        task = Task.objects.create(**taskData)
         # .save() seemed to want to have a taskID provided, even though this is a new entry and
         # therefore is supposed to be auto incremented, so using create here instead.
-        # The double asterisk (**) designates that taskData is a set of kwargs, which is some
-        # really cool syntax I can't wait to abuse.
+        return task
 
     def updateTask(self, taskID: int, taskData: dict):
         """
@@ -99,18 +94,25 @@ class taskManager():
         (Docstring needed rewrite, sorry.)
         """
 
+        if not (Task.objects.filter(taskID=taskID).exists()):
+            return {"err": "This task does not exist"}
+
         targetTask = Task.objects.get(taskID=taskID)
 
         # Update all provided fields
         for key, val in taskData.items():
             setattr(targetTask, key, val)
-
         targetTask.save()
+
+        return targetTask
 
     def deleteTask(self, taskID):
         """
         Soft deletes a task from the database by setting `isDelete = True`
         """
+
+        if not Task.objects.filter(taskID=taskID).exists():
+            return {"err": "This task does not exist"}
 
         targetTask = Task.objects.get(taskID=taskID)
         targetTask.isDeleted = True
@@ -121,19 +123,28 @@ class taskManager():
 
 
 # Task Views
+@login_required(login_url="login")
 def taskTableManagement(request):
     taskManagement = taskManager()
-    creationForm = createTaskForm(request.user)
+    creationForm   = createTaskForm(request.user)
+    tasks          = taskManagement.getTasks(request.user)
 
     if request.method == "POST":
-        creationForm = createTaskForm(request.user, request.POST)
+        creationFormPost = createTaskForm(request.user, request.POST)
+        if "createTask" in request.POST:
+            if creationFormPost.is_valid():
+                taskManagement.createTask(request, creationFormPost.cleaned_data)
+                messages.add_message(request, messages.SUCCESS, "New Task Added.")
+                return redirect("/tasks/tableView")
+            else:
+                print(creationFormPost.errors)
+                context = {
+                    "creationForm": creationFormPost       ,
+                    "error"       : creationFormPost.errors,
+                    "TaskData"    : tasks
+                }
 
-        if creationForm.is_valid():
-            taskManagement.createTask(request, creationForm.cleaned_data)
-
-            return redirect("/tasks/tableView")
-
-    tasks = taskManagement.getTasks(request.user)
+                return render(request, "Tasks/taskTable.html", context)
 
     context = {
         "creationForm": creationForm,
@@ -142,40 +153,40 @@ def taskTableManagement(request):
 
     return render(request, "Tasks/taskTable.html", context)
 
-
+@login_required(login_url="login")
 def taskUpdatePage(request, taskID: int):
-    # No idea what this does.
-    if request.method == "GET":
-        redirectURL= request.META.get('HTTP_REFERER')
-        request.session['http_referer'] = redirectURL
+    targetTask          = Task.objects.get(taskID=taskID)
+    targetTask.dueDate  = targetTask.dueDate.strftime("%d/%m/%Y")
+    updateTask          = taskForm(request.user, initial=model_to_dict(targetTask))
+
+    context = {
+        "updateForm": updateTask,
+        "targTask"  : targetTask
+    }
 
     if not Task.objects.filter(taskID=taskID).exists():
-        return HttpResponseRedirect(request.session['http_referer'])
+        return HttpResponseRedirect(request.session["http_referer"])
 
     if request.method == "POST":
         taskManagement = taskManager()
+        updateTaskPost = taskForm(request.user, request.POST)
 
-        if "deleteTaskForm" in request.POST:
+        if "updateTask" in request.POST:
+            if updateTaskPost.is_valid():
+                targetTask = taskManagement.updateTask(taskID, updateTaskPost.cleaned_data)
+                messages.add_message(request, messages.SUCCESS, "Task Details Updated.")
+                return redirect(f"/tasks/updateTask/{taskID}")
+            else:
+                context = {
+                    "updateForm": updateTaskPost,
+                    "error"     : updateTaskPost.errors,
+                }
+
+                return render(request, "Tasks/updateTask.html", context)
+        elif "deleteTask" in request.POST:
             taskManagement.deleteTask(taskID)
-
-            return HttpResponseRedirect(request.session['http_referer'])
-
-        updateTaskModal = taskForm(request.user, request.POST)
-
-        if updateTaskModal.is_valid():
-            taskManagement.updateTask(taskID, updateTaskModal.cleaned_data)
-
-            # return HttpResponseRedirect(reverse("tableView"))
-            return HttpResponseRedirect(request.session['http_referer'])
-
-    targetTask = Task.objects.get(taskID=taskID)
-    targetTask.dueDate = targetTask.dueDate.strftime("%d/%m/%Y")
-    updateTaskModal = taskForm(request.user, initial=model_to_dict(targetTask))
-
-    context = {
-        "updateForm": updateTaskModal,
-        "targTask": targetTask,
-    }
+            messages.add_message(request, messages.WARNING, "Task Deleted.")
+            return redirect("/tasks/tableView")
 
     return render(request, "Tasks/updateTask.html", context=context)
 
@@ -185,28 +196,28 @@ def nullTaskUpdatePage(request):
 
 
 # Kanbans
-# I ought to use a manager class
-@login_required
+@login_required(login_url="login")
 def kanbanTable(request):
     """
     A page containing a table of all the kanban boards.
     """
 
     if request.method =="POST":
-        # Apparently I decided to do this differently?
-        if "deleteKanbanForm" in request.POST:
-            pass
-
         kanbanForm = createKanbanForm(request.POST)
 
         if kanbanForm.is_valid():
-            newKanban = kanbanForm.cleaned_data
+            newKanban           = kanbanForm.cleaned_data
             newKanban["farmID"] = request.user.currentFarm
 
             Kanban.objects.create(**newKanban)
 
+            messages.add_message(request, messages.SUCCESS, "New Kanban board created.")
+
     # Query the database
-    kanbanQuerySet = Kanban.objects.filter(farmID=request.user.currentFarm_id, deleted=False)
+    kanbanQuerySet = Kanban.objects.filter(
+        farmID  = request.user.currentFarm_id,
+        deleted = False
+    )
     kanbanContentsQuerySet = KanbanContents.objects.all()
 
     # Initialise all the counters
@@ -216,7 +227,8 @@ def kanbanTable(request):
 
     # Count the number of tasks of each status per kanban board
     for content in kanbanContentsQuerySet:
-        statuses[content.kanbanID.kanbanID][content.taskID.status] += 1
+        if not content.kanbanID.deleted:
+            statuses[content.kanbanID.kanbanID][content.taskID.status] += 1
 
     # Pull the data together
     kanbans = [
@@ -226,84 +238,100 @@ def kanbanTable(request):
 
     # Render page with the data
     context = {
-        "Kanbans": kanbans,
+        "Kanbans"         : kanbans         ,
         "createKanbanForm": createKanbanForm
     }
 
     return render(request, "Tasks/kanbanTable.html", context)
 
 
-@login_required
+@login_required(login_url="login")
 def kanbanBoard(request):
     """
     A page viewing a singular kanban board.
     """
 
-    curKanbanID = request.COOKIES.get('curKanbanID') # Omitting URL params, for better or worse
+    curKanbanID = request.COOKIES.get("curKanbanID") # Omitting URL params, for better or worse
     # Should really add an error message if the cookie doesn't exist
 
-    kanban = Kanban.objects.get(kanbanID=curKanbanID)
+    kanban                 = Kanban.objects.get(kanbanID=curKanbanID)
     kanbanContentsQuerySet = KanbanContents.objects.filter(kanbanID=curKanbanID)
+    name                   = kanban.name
 
-    name = kanban.name
-    bucketNames = ["Not Started", "In Progress", "Blocked", "Review", "Complete"]
+    bucketNames = {
+        "Not Started": "notStarted",
+        "In Progress": "inProgress",
+        "Blocked"    : "blocked"   ,
+        "Review"     : "review"    ,
+        "Complete"   : "complete"
+    }
+
     cardInfoList = [
         (
             content.taskID.status             ,
             content.order                     ,
             content.taskID.taskID             ,
+            content.taskID.assignedTo.username,
+        str(content.taskID.dueDate)           ,
             content.taskID.name               ,
-            content.taskID.description        ,
-            content.taskID.assignedTo.username # Where is this username from?!
+            content.taskID.description
         )
-        for content in kanbanContentsQuerySet
-        if content.taskID.status < 5
+        for content
+        in  kanbanContentsQuerySet
+        if  content.taskID.status < 5
     ]
     cardInfoList = sorted(cardInfoList, key = lambda x: (x[0], x[1]))
 
     # Get the unused tasks
     kanbanTaskIDs = [content.taskID.taskID for content in kanbanContentsQuerySet]
-    taskQuerySet = Task.objects.filter(
+    taskQuerySet  = Task.objects.filter(
         isDeleted=False, farmID=request.user.currentFarm
     ).values(
         "taskID"     ,
         "status"     ,
         "name"       ,
         "description",
-        "assignedTo"
+        "assignedTo" ,
+        "dueDate"
     )
     tasks = list(taskQuerySet)
+    # Filter out already present tasks
     utasks = [task for task in tasks if task["taskID"] not in kanbanTaskIDs]
-    utasks = sorted(utasks, key=lambda x: x["name"])
+
+    # Clean the unused tasks
     for idx, task in enumerate(utasks):
-        utasks[idx]["assignedTo"] = UserProfile.objects.get(id=task["assignedTo"]).username
+        utasks[idx]["assignedTo" ] = UserProfile.objects.get(id=task["assignedTo"]).username
+        utasks[idx]["dueDate"    ] = str(utasks[idx]["dueDate"])
+        utasks[idx]["displayText"] = \
+            f"{utasks[idx]['name']} - {utasks[idx]['assignedTo']} - {utasks[idx]['dueDate']}"
+
+    # Sort the utasks by dueDate then assignedTo, so they're grouped by user
+    utasks = sorted(utasks, key=lambda x: x["dueDate"   ])
+    utasks = sorted(utasks, key=lambda x: x["assignedTo"])
 
     # Build context
     context = {
-        "Name"   : name   ,
-        "UTasks" : utasks ,
-        "BucketNames": bucketNames,
+        "Name"        : name        ,
+        "UTasks"      : utasks      ,
+        "BucketNames" : bucketNames ,
         "CardInfoList": cardInfoList
     }
 
     return render(request, "Tasks/kanbanView.html", context)
 
 
-@login_required
+@login_required(login_url="login")
 def deleteKanban(request):
     if request.method == "POST":
+        # Form + .is_valid() didn't work
         deleteKanbanByID(int(request.POST["kanbanID"]))
 
-        # Form didn't want to work
-        # kanbanForm = deleteKanbanForm(request.POST)
-        # if kanbanForm.is_valid():
-        #     kanbanID = kanbanForm.cleaned_data["kanbanID"]
-        #     deleteKanbanByID(kanbanID)
+        messages.add_message(request, messages.SUCCESS, "Kanban board deleted.")
 
         return redirect("/tasks/kanbanTable")
 
 
-@login_required
+@login_required(login_url="login")
 def updateKanban(request):
     """
     Updating the kanban board.
@@ -318,53 +346,71 @@ def updateKanban(request):
         ]
     """
 
-    if request.method == 'POST':
-        # Get the json asap, no point processing anything else if this is going to fail
-        # Should probably do validation here, everything just needs to be a integer
-        #   (taskID > 0 and order >= 0 and status >= 0)
+    if request.method == "POST":
         try:
-            newKanbanContentsList = json.loads(request.POST.get("cards"))
-        except json.JSONDecodeError:
+            # Get the json asap, no point processing anything else if this is going to fail
+            # Should probably do validation here, everything just needs to be a integer
+            #   (taskID > 0 and order >= 0 and status >= 0)
+            try:
+                newKanbanContentsList = json.loads(request.POST.get("cards"))
+            except json.JSONDecodeError:
+                print("updateKanban failed during json load")
+                return JsonResponse({
+                    "status" : "error"       ,
+                    "message": "Invalid data"
+                }, status=400)
+            newKanbanContentsList = sorted(newKanbanContentsList, key=lambda x: x["taskID"])
+
+            curKanbanID            = request.COOKIES.get("curKanbanID")
+            kanbanContentsQuerySet = KanbanContents.objects \
+                .filter(kanbanID=curKanbanID).order_by("taskID")
+            oldKanbanContentsList  = list(kanbanContentsQuerySet)
+
+            # Update the state of the kanban, content by content
+            while len(newKanbanContentsList) + len(oldKanbanContentsList) > 0:
+                # Explicit conditions, could be refactored shorter
+                if   len(oldKanbanContentsList) == 0:
+                    createKanbanContents(newKanbanContentsList, oldKanbanContentsList, curKanbanID)
+                elif len(newKanbanContentsList) == 0:
+                    deleteKanbanContents(newKanbanContentsList, oldKanbanContentsList)
+                elif newKanbanContentsList[0]["taskID"] <  oldKanbanContentsList[0].taskID.taskID:
+                    createKanbanContents(newKanbanContentsList, oldKanbanContentsList, curKanbanID)
+                elif newKanbanContentsList[0]["taskID"] >  oldKanbanContentsList[0].taskID.taskID:
+                    deleteKanbanContents(newKanbanContentsList, oldKanbanContentsList)
+                elif newKanbanContentsList[0]["taskID"] == oldKanbanContentsList[0].taskID.taskID:
+                    updateKanbanContents(newKanbanContentsList, oldKanbanContentsList)
+                else:
+                    print("updateKanban failed during the save loop")
+                    return JsonResponse({
+                        "status" : "error"                                                             ,
+                        "message": "Something has gone horrifically wrong in Tasks.views.updateKanban."
+                    }, status=400)
+
             return JsonResponse({
-                'status' : 'error',
-                'message': 'Invalid data'
+                "status" : "success"                        ,
+                "message": "Kanban board saved successfully",
+                "success": True
+            }, status=200)
+
+        except Exception as err:
+            print(f"updateKanban failed with {err = }")
+            return JsonResponse({
+                "status" : "error"              ,
+                "message": "Save attempt failed"
             }, status=400)
-        newKanbanContentsList = sorted(newKanbanContentsList, key=lambda x: x["taskID"])
-
-        curKanbanID = request.COOKIES.get('curKanbanID')
-        kanbanContentsQuerySet = KanbanContents.objects \
-            .filter(kanbanID=curKanbanID).order_by("taskID")
-        oldKanbanContentsList = list(kanbanContentsQuerySet)
-
-        # Update the state of the kanban, content by content
-        while len(newKanbanContentsList) + len(oldKanbanContentsList) > 0:
-            # Slightly redundent elifs and poor if conditions, but I wanted this explicit
-            if   len(oldKanbanContentsList) == 0:
-                createKanbanContents(newKanbanContentsList, oldKanbanContentsList, curKanbanID)
-            elif len(newKanbanContentsList) == 0:
-                deleteKanbanContents(newKanbanContentsList, oldKanbanContentsList)
-            elif newKanbanContentsList[0]["taskID"] <  oldKanbanContentsList[0].taskID.taskID:
-                createKanbanContents(newKanbanContentsList, oldKanbanContentsList, curKanbanID)
-            elif newKanbanContentsList[0]["taskID"] >  oldKanbanContentsList[0].taskID.taskID:
-                deleteKanbanContents(newKanbanContentsList, oldKanbanContentsList)
-            elif newKanbanContentsList[0]["taskID"] == oldKanbanContentsList[0].taskID.taskID:
-                updateKanbanContents(newKanbanContentsList, oldKanbanContentsList)
-            else:
-                print("Something has gone horrifically wrong in Tasks.views.updateKanban.")
-
-        return JsonResponse({'success': True})
 
     return JsonResponse({
-        'status' : 'error',
-        'message': 'Invalid request'
+        "status" : "error"               ,
+        "message": "Invalid request type"
     }, status=400)
 
 
 # Move these into a manager classes?
 def deleteKanbanByID(kanbanID):
-    kanban = Kanban.objects.get(kanbanID=kanbanID)
+    kanban         = Kanban.objects.get(kanbanID=kanbanID)
     kanban.deleted = True
     kanban.save()
+
 
 def createKanbanContents(newKanbanContentsList, _, curKanbanID):
     """
@@ -373,8 +419,9 @@ def createKanbanContents(newKanbanContentsList, _, curKanbanID):
 
     newKanbanContent = newKanbanContentsList.pop(0)
 
+    # Form + .is_valid() didn't work here
     newKanbanContentInstance = KanbanContents(
-        kanbanID = Kanban.objects.get(kanbanID=curKanbanID),
+        kanbanID = Kanban.objects.get(kanbanID=curKanbanID)           ,
         taskID   = Task.objects.get(taskID=newKanbanContent["taskID"]),
         order    = newKanbanContent["order" ]
     )
@@ -386,15 +433,6 @@ def createKanbanContents(newKanbanContentsList, _, curKanbanID):
     task.status = newKanbanContent["status"]
     task.save()
 
-    # formData = createKanbanContentForm(
-    #     newKanbanContent["taskID"],
-    #     newKanbanContent["order" ],
-    #     newKanbanContent["status"]
-    # )
-
-    # if formData.is_valid():
-    #     createKanbanContents(curKanbanID, formData.cleaned_data)
-
 
 def updateKanbanContents(newKanbanContentsList, oldKanbanContentsList):
     """
@@ -404,76 +442,24 @@ def updateKanbanContents(newKanbanContentsList, oldKanbanContentsList):
     oldKanbanContent = oldKanbanContentsList.pop(0)
     newKanbanContent = newKanbanContentsList.pop(0)
 
-    content = KanbanContents.objects.get(kanbanContentsID=oldKanbanContent.kanbanContentsID)
+    # Form + .is_valid() didn't work here
+    content       = KanbanContents.objects.get(kanbanContentsID=oldKanbanContent.kanbanContentsID)
     content.order = newKanbanContent["order"]
     content.save()
 
-    task = Task.objects.get(taskID=content.taskID.taskID)
+    task        = Task.objects.get(taskID=content.taskID.taskID)
     task.status = newKanbanContent["status"]
     task.save()
-
-    # formData = updateKanbanContentForm(
-    #     oldKanbanContent["kanbanContentsID"],
-    #     newKanbanContent["order"           ],
-    #     newKanbanContent["status"          ]
-    # )
-
-    # if formData.is_valid():
 
 
 def deleteKanbanContents(_, oldKanbanContentsList):
     """
-    Delete a kanbanContents off the face of the Earth, forever.
+    Delete a kanbanContents permanently. Uses hard deleted instead of soft delete since this a
+    relation rather than new data.
+
+    No form validation, the data handled here comes from the database instead of the client.
     """
 
     oldKanbanContent = oldKanbanContentsList.pop(0)
 
     KanbanContents.objects.get(kanbanContentsID=oldKanbanContent.kanbanContentsID).delete()
-    # Might be able to just go `oldKanbanContent.delete()`
-
-    # No form validation, the data handled here comes from the database instead of the client.
-
-
-# Not used
-def getUTasks(request):
-    """
-    API endpoint that returns the unused tasks for a kanban board.
-    'Unused' meaning that the task isn't currently in the board.
-
-    This is intended to be run from the kanbanView.html page.
-    """
-
-    if request.method == 'GET':
-        try:
-            curKanbanID = request.COOKIES.get("curKanbanID")
-            kanbanContentIDsQuerySet = KanbanContents.objects.filter(
-                kanbanID=curKanbanID
-            ).values("kanbanID")
-            kanbanContentIDs = list(kanbanContentIDsQuerySet)
-
-            taskQuerySet = Task.objects.get(
-                isDeleted=False, farmID=request.user.currentFarm
-            ).values(
-                "taskID"     ,
-                "status"     ,
-                "name"       ,
-                "description",
-                "assignedTo"
-            )
-            tasks = list(taskQuerySet)
-            utasks = [task for task in tasks if task["taskID"] not in kanbanContentIDs]
-
-            return JsonResponse({
-                'utasks': utasks
-            })
-
-        except Exception as err:
-            return JsonResponse({
-                "message": "Something screwed up",
-                "error": err
-            })
-
-    return JsonResponse({
-        'status' : 'error',
-        'message': 'Invalid request'
-    }, status=400)

@@ -2,5 +2,5 @@ from django.apps import AppConfig
 
 
 class TeamaccConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'FarmAcc'
+    default_auto_field = "django.db.models.BigAutoField"
+    name               = "FarmAcc"

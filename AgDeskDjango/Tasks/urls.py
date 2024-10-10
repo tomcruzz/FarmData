@@ -17,5 +17,4 @@ urlpatterns = [
     path("deleteKanban"           , views.deleteKanban       , name="deleteKanban"    ),
     path("kanbanView"             , views.kanbanBoard        , name="kanbanView"      ),
     path("updateKanban"           , views.updateKanban       , name="updateKanban"    ),
-    path("getUTasks"              , views.getUTasks          , name="getUTasks"       )
 ]

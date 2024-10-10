@@ -61,6 +61,7 @@ class Widget(models.Model):
     row = models.IntegerField(default=1)
     sizex = models.IntegerField(default=1)
     sizey = models.IntegerField(default=1)
+    saved = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
