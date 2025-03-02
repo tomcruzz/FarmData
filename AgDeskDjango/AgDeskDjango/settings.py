@@ -121,7 +121,7 @@ DASHING = {
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-print(os.environ.get('DB_PASS'))
+
 DATABASES = {
     "default": {
         'ENGINE'  : 'django.db.backends.postgresql_psycopg2',
