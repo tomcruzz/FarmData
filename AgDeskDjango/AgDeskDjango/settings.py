@@ -21,7 +21,8 @@ except ModuleNotFoundError:
 
 import os
 from pathlib import Path
-
+from dotenv import load_dotenv
+load_dotenv()
 
 MESSAGE_TAGS = {
     messages.DEBUG  : "alert-secondary",
@@ -123,12 +124,12 @@ DASHING = {
 
 DATABASES = {
     "default": {
-        "ENGINE"  : "django.db.backends.postgresql_psycopg2"              ,
-        "NAME"    : ( databaseContext := utils.databaseContext() )["NAME"],
-        "USER"    : databaseContext["USER"]                               ,
-        "PASSWORD": databaseContext["PASSWORD"]                           ,
-        "HOST"    : "127.0.0.1"                                           ,
-        "PORT"    : "5432"
+        'ENGINE'  : 'django.db.backends.postgresql_psycopg2',
+        'NAME': os.environ.get('DB_NAME'),
+        'USER': os.environ.get('DB_USER'),
+        'PASSWORD': os.environ.get('DB_PASS'),
+        'HOST': os.environ.get('DB_HOST', 'localhost'),
+        'PORT': os.environ.get('DB_PORT', '5432'),
     }
 }
 

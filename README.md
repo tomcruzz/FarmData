@@ -1,220 +1,137 @@
-# Agdesk_Farm_Management
+# Contents
+
+- [Contents](#contents)
+- [Agdesk Farm Management](#agdesk-farm-management)
+- [Platform Setup Instructions](#platform-setup-instructions)
+  - [Install PostGIS Database](#install-postgis-database)
+  - [pgAdmin4](#pgadmin4)
+  - [SQL Shell](#sql-shell)
+  - [VS CODE EXPLORER](#vs-code-explorer)
+  - [Using Terminal](#using-terminal)
+  - [Running the Django Server](#running-the-django-server)
+  - [Useful Resources](#useful-resources)
+
+# Agdesk Farm Management
+
 This repository provides the source code for AgDesk Farm Management, a web-based application designed to streamline and optimize farm operations.
 
-**This guide assumes that AgDesk is being configured on a Windows x64 based operating environment**
+`This guide assumes that AgDesk is being configured on a Windows x64 based operating environment`
 
-# Getting Started
-1. Software Dependencies
-2. Setting up the Python Environment
-3. Configuring the weather API
-4. Setting up a Database
-5. Connecting the Database to Agdesk's Environment
-6. Starting the Server and some Common Issues
+# Platform Setup Instructions
 
+To understand the Company Guidelines for Programming, click [here][Guidelines]
 
-# Software Dependencies
+In case you can't see the images below, please check `Platform Setup Instructions` in the link above.
 
-## PostgreSQL
+[PostgreSQL]: https://www.postgresql.org/download/
+[Python]: https://www.python.org/ftp/python/3.12.0/python-3.12.0-amd64.exe
+[PythonCode]: https://www.w3schools.com/python/
+[Django]: https://docs.djangoproject.com/en/5.1/
+[Guidelines]: https://drive.google.com/drive/folders/1zdl1Sj5JfqQgwdTPyQeEQtGngYgkfSun?usp=drive_link
 
-### Downloading PostgreSQL
-PostgreSQL is the relational database management system of choice for the Agdesk solution. The package can be downloaded at the following links.
+## Install PostGIS Database
 
-https://www.enterprisedb.com/downloads/postgres-postgresql-downloads
+- [Install the latest version of PostgreSQL][PostgreSQL]
+- Go with the default settings for everything except for things mentioned below.
+  - Set password as `pass`
+  - Select `port 5432` (or your port)
+  - Select `PostgreSQL 16 (x64) on port 5432` (or your port) from the drop down menu.
+- Check `ADD TO PYTHON PATH` or something similar on one of the pages.
+- When you reach the following page, select the options mentioned below:
+  - Expand the Database server option, then ensure that `PostgreSQL (64 bit) v16.4-1` is checked
+  - Select the Spatial Extensions option and check the box called `PostGIS 3.4.2 bundle for PostgreSQL 16 (64 bit) v3.4.2`
 
-**_This guide assumes that PostGreSQL is being installed on a Windows x64 based operating environment_**
+![gisExtension](https://i.imgur.com/wnGnOgX.jpg)
 
-Select the operating system family and architecture for which you intend to download the PostgreSQL package onto **Ensuring that version 16.4 is selected**. 
+- Ensure the selected packages to install are correct before proceding.  
+ `If the installer stops responding - WAIT! It will resume`
+- On the following menu, leave the option to `skip installation` unchecked and click next.
+- Accept the license agreement in the PostGIS Bundle popup window
+- On the Choose components menu, ensure that the following boxes are checked:
+  - `PostGIS Bundle`
+  - `Register PROJ_LIB Env Variable`
+  - `Register GDAL_DATA Env Variable`
+  - `Enable Key GDAL Drivers`
+  - `Allow Out-db Rasters`
+  - `Register SSL Bundle`
+- Set the install location of PostGIS. Installing it in the default listed directory is recommended for simplicity.
+- Select Close and Finish the installation.
+- SQL Shell and pgAdmin4 will be installed automatically once the installation above finishes.
 
-### Running the Installer
+## pgAdmin4
 
-1. Select Next at the Welcome Screen
-2. Specify the Installation Directory you wish to install the package to. By default, this should be C:\Program Files\PostgreSQL\16
-3. Select Components: Ensure that all possible components are selected. **particularaly pgAdmin4 and Stack Builder configuration of these will occur later in this guide.**
-4. Specify the directory at which you wish to install data for the PostgreSQL pacakge to. By default, this should be C:\Program Files\PostgreSQL\16\data
-5. provide a password for the database superuser. **Store this password somewhere secure as you (and your team) will use it to access Agdesk's database.**
-6. In most cases the default suggested port 5432 will suffice, however, this can be changed as required.
-7. Unless specifically required - do not change the locale. By leaving it as [Default Local] it will match your device's operating system.
-8. Take note of the pre-installation summary to confirm that everything has been configured correctly.
-9. select "Next" and run the installer. After the installation has finished, a checkbox will appear prompting you to launch stack builder, **make sure this box is checked.**
+- Open `pgAdmin4` and log in with the password used during installation.
+- Go to `Servers -> PostgreSQL 16 -> Databases` and right-click it to create a new database named `agdesk`.
 
-### Running the Stackbuilder installer
+![gisExtension](https://i.imgur.com/2D9ybmN.png)
 
-1. At the first screen on the stack builder installer - select "PostgreSQL 16 (x64) on port 5432 (or your port) from the drop down menu.
-2. A tree of options will appear at the next phase of installation. Expand the Database server option, then ensure that PostgreSQL (64 bit) v16.4-1 is checked. **Do not progress to the next page**
-  **If this option says (installed) next to it, then you can leave it unchecked. **
-3. Select the Spatial Extensions option and check the box called PostGIS 3.4.2 bundle for PostgreSQL 16 (64 bit) v3.4.2 **Progress to the next page after selecting this**
-4. Ensure the selected packages to install are correct - The package download directory will be the currently signed in user by default.
-   **If the installer stops responding after clicking next - WAIT. it may take some time, but will then resume with the install in a popup menu**
-6. on the following menu, leave the option to skip installation unchecked and click next.
-7. Accept the license agreement in the PostGIS Bundle popup window
-8. On the Choose components menu, ensure that the following boxes are checked. Click Next
-   -   PostGIS Bundle
-   -   Register PROJ_LIB Env Variable
-   -   Register GDAL_DATA Env Variable
-   -   Enable Key GDAL Drivers
-   -   Allow Out-db Rasters
-   -   Register SSL Bundle
-9. Set the install location of PostGIS. Installing it in the default listed directory is recommended for simplicity.
-10. Select Close and Finish the installation.
+## SQL Shell
 
-## Installing Python
+- Open `SQL Shell`. Everything in square brackets is the default value. Hit enter to keep the default values. Only change the default value of Database to `agdesk` and Password to `pass` (installation password).
 
-_This installation guide uses python version 3.12.0_
+  ![Untitled](https://i.imgur.com/6RX5kzO.png)
 
-Begin by Downloading Python 3.12.0 from the following link https://www.python.org/ftp/python/3.12.0/python-3.12.0-amd64.exe 
-when you run the installer check the box to add Python 3.8 to PATH and check the box to Install Launcher for all users. Following this, select Install Now.
-This Concludes the installation of Python 3.8
+## VS CODE EXPLORER
 
-# Setting Up The Python Environment
+- Navigate to the project's web folder and copy contents of `.env_defaults` onto a new `.env` file.
+- Change the password here if needed
 
-## Create the Virtual Environment
+![gisExtension](https://i.imgur.com/SglJuCT.png)
 
-To Begin adding to this repository, you will first need to create a virtual python environment in which all of the packages in requirements.txt will be installed.
+## Using Terminal
 
-Before running this run the below script in a powershell/terminal window.
+- Clone this repo and change directory in the terminal to where the repo is stored.
+- [Install Python version 3.12][Python]
+- Execute the code in a terminal (command prompt for Windows users):
+- Check if Python version 3.12 is installed using `py -0`.
+- Create and activate virtual environment:
 
-```cmd
-pip install virtualenv
+ ```shell
+  py -3.12 -m venv venv
+  .\venv\Scripts\activate.bat
 ```
 
-Once virtualenv has completed installing, navigate to the project's root directory and perform the following.
+- Install all the required packages:
 
-```cmd
-python3.8 -m venv env
+```shell
+  pip install -r requirements.txt
 ```
 
-This will create a folder called env inside of the project.
-When ready to begin developing run the below commands
+- Check if the requirements were installed using `pip list`
+- Move to AgDeskDjango directory `cd AgDeskDjango`
+- Run the following commands in this directory:
 
-```cmd
-env/Scripts/activate.bat //If running in CMD
-env/Scripts/Activate.ps1 //If running in Powershell
+```shell
+python delete_migrations.py
 ```
 
-The environment can be deactivated at a later point with the following commands.
-
-```cmd
-env/Scripts/deactivate.bat //If running in CMD
-```
-
-## Ensuring the Packages is Consistent
-
-Viewing the currently installed packages is as simple as the list command.
-
-```cmd
-pip list
-```
-
-To make sure that the environment contains only the packages in requirements.txt, it can be useful to uninstall all the current packages before running the install command.
-If pip list returns no packages, proceed to package installation.
-
-```cmd
-pip freeze > toberemoved.txt # Creates a text file of current packages, 
-pip uninstall -r toberemoved.txt -y
-```
-
-## Install Required Packages to the Virtual Environment
-
-Once the Virtual environment is running, the necessary python packages should be installed.
-This can be performed by running the command pip install on the requirements file.
-The file, requirements.txt, contains a list of all packages used in the project.
-
-```cmd
-pip install -r Agdesk_Farm_Management/Package_management/requirements.txt
-```
-
-Following this the Python Environment has been configured. However, the AgDesk Django evnironment still needs configuration.
-Prior to doing this, the Weather API that AgDesk interfaces with must be configured and a PostgreSQL database must be setup and connected to the AgDesk Environment.
-
-# Setting up the Weather API Connection
-
-_**NOTE: If one user does not wish to generate an API key and share it with their development team, each user will need to complete this section. The repository is configured to not commit .env files**_
-
-## Account Registration and API key Generation
-To ensure functionality of the weatherAPI which has been integrated into the Agdesk Solution, an account will need to be registered with the OpenWeather Weather API service which can be performed using the following link. https://home.openweathermap.org/users/sign_up
-
-alternatively, the login for the service can be located at https://home.openweathermap.org/users/sign_in
-
-Once logged in to, or registered with the service, the user should navigate to the page titled API keys. In the section
-called Create key, the account owner should provide a key name of their choosing and then click Generate.
-
-## Configuring the API Inside of the AgDesk Environment
-Inside of the project's directory, .\AgDeskDjango, create a file called .env.
-once the .env file has been created, add the following line where <insert_api_key> represents the API key generated in the previous section.
-The API Key must be a string.
-
-```text
-API_KEY="<insert_api_key>"
-```
-
-If the application is used prior to inserting this key, or with a suspended/expired key, weather data will not be obtained
-from the OpenWeather service.
-
-# Setup the Database and Link it to AgDesks Environment
-
-In the projects current state, it will not run as no database has been created or linked to the project.
-
-## Creating the Database in PgAdmin 4
-
-1. Open the PgAdmin 4 application and select the drop down option called servers from the left hand menu.
-2. After selecting the option, you will need to enter the password that was configured for the super user in the PostgreSQL installation section.
-3. Select the dropdown option called Databases, then right click it and select the Create option, followed by the Database option.
-4. Enter a Database Title. It does not matter what this is, but it will be used in the project when linking AgDesk to the Database.
-5. Finally, click Save.
-
-A Database has now been created for Agdesk in the PgAdmin 4 app.
-
-
-## Linking the Database to the AgDesk Project
-
-Now return to settings.py in the AgDesk Django project and find the dictionary titled "DATABASES", It should show the below values by default.
-
-```python
-DATABASES = {
-   'default': {
-       'ENGINE': 'django.db.backends.sqlite3',
-       'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-   }
-}
-```
-
-This dictionary should be edited so that it reflects the below code, most values will need to replaced with their respective values for the current application.
-
-```python
-DATABASES = {
-   'default': {
-       'ENGINE': 'django.db.backends.postgresql',
-       'NAME': ‘<database_name>’,
-       'USER': '<database_username>',
-       'PASSWORD': '<password>',
-       'HOST': '<database_hostname_or_ip>',
-       'PORT': '<database_port>',
-   }
-}
-```
-
-Once complete open the terminal which is running the Python virtual environment for AgDesk and execute the following commands in order.
-
-```cmd
+```shell
 python manage.py makemigrations
 ```
 
-```cmd
+```shell
 python manage.py migrate
 ```
 
-Upon re-opening PgAdmin4, all of the models from Django should now have a tabular representation in the following directory <database_name> > Schemas > Tables.
+Upon re-opening PgAdmin4, all of the models from Django should now have a tabular representation in the following directory `Servers -> PostgreSQL 16 -> Databases -> agdesk -> Schemas -> Tables`
+
+![gisExtension](https://i.imgur.com/5kUDsQ2.png)
 
 ## Running the Django Server
 
 Confirm that the application works by running the following from the root directory of the project.
 
-```cmd
-py .\AgDeskDjango\manage.py runserver
+```shell
+python manage.py runserver
 ```
 
-# Useful  Resources
+To check if the tables are being filled:
+- Go to `Servers -> PostgreSQL 16 -> Databases -> agdesk -> Schemas -> Tables -> <table name>`
+- Right click the `<table name>` and select `View/Edit Data -> All Rows`
 
-Django Documentation: https://docs.djangoproject.com/en/5.1/
+![gisExtension](https://i.imgur.com/4927Eee.png)
 
-#
+## Useful Resources
+
+- [Python Documentation][PythonCode]
+- [Django Documentation][Django]
