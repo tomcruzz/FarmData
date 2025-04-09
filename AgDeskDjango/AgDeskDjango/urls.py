@@ -39,7 +39,7 @@ urlpatterns = [
     path("emergency/" , include("Emergency.urls"       )),
     path(""           , include("assetExpenses.urls"   )),
     path(""           , include(router.urls            )),
-    path('maptiles/', include('maptiles.urls'))
+    path('maptiles/'  , include('maptiles.urls'        )),
 ]
 
 
@@ -52,3 +52,6 @@ if settings.DEBUG:
         settings.MEDIA_URL               ,
         document_root=settings.MEDIA_ROOT
     )
+
+
+

@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block webpageContent %}
+<div class="container mt-4">
+    <h1 class="mb-4">NDVI Viewer for {{ aoi.name }}</h1>
+
+    <!-- DATE PICKER: sends HTMX call -->
+    <label for="ndvi-date">Select NDVI Date</label>
+    <input 
+        type="date"
+        id="ndvi-date"
+        name="ndviDate"
+        class="form-control mb-3"
+        value="{{ today|date:'Y-m-d' }}"
+        hx-get="{% url 'maptiles:ndvi_htmx_view' aoi.id %}"
+        hx-target="#ndvi-map-container"
+        hx-trigger="change"
+        hx-swap="innerHTML"
+    />
+
+    <!-- Map loads here -->
+    <div id="ndvi-map-container" class="border p-3 bg-light">
+        <p>Select a date to view NDVI map.</p>
+    </div>
+</div>
+{% endblock %}
+
+
+<script>
+    const source = new EventSource("/maptiles/ndvi-stream/{{ aoi.id }}/");
+
+    source.onmessage = function(event) {
+        console.log("Live NDVI Update:", event.data);
+
+        const date = document.querySelector("#ndvi-date").value;
+        const container = document.querySelector("#ndvi-map-container");
+
+        container.setAttribute("hx-get", `/maptiles/ndvi/{{ aoi.id }}?ndviDate=${date}`);
+        container.setAttribute("hx-trigger", "load");
+        container.dispatchEvent(new Event("load"));
+    };
+</script>
+
+
+<script>
+    const aoiId = document.getElementById("ndvi-map").dataset.aoiId;
+    const sse = new EventSource(`/maptiles/ndvi-stream/${aoiId}/`);
+
+    sse.onmessage = function(event) {
+        console.log("New NDVI data received:", event.data);
+        alert("ew NDVI imagery available. Please refresh the date!");
+        // Optionally auto-trigger HTMX reload or refetch map
+    };
+
+    sse.onerror = function(err) {
+        console.warn("SSE connection lost...", err);
+    };
+</script>

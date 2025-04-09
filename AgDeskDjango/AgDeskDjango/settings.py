@@ -24,6 +24,11 @@ from pathlib import Path
 from dotenv import load_dotenv
 load_dotenv()
 
+# Fix for GDAL/PROJ
+os.environ['PROJ_LIB'] = os.getenv('PROJ_LIB', 'C:/Program Files/GDAL/projlib')
+os.environ['GDAL_DATA'] = os.getenv('GDAL_DATA', 'C:/Program Files/GDAL/gdal-data')
+
+
 MESSAGE_TAGS = {
     messages.DEBUG  : "alert-secondary",
     messages.INFO   : "alert-info"     ,
@@ -57,6 +62,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions"          ,
     "django.contrib.messages"          ,
     "django.contrib.staticfiles"       ,
+    "django.contrib.gis"               ,           # GeoDjango: enable spatial widgets
     "assetMaintenance"                 ,
     "assetManagement"                  ,
     "assetExpenses"                    ,
@@ -71,7 +77,8 @@ INSTALLED_APPS = [
     "Dashboard"                        ,
     "django_extensions"                ,
     "dashing"                          ,
-    "maptiles",
+    "maptiles"                         ,
+    "leaflet"                          ,             
 ]
 
 MIDDLEWARE = [
@@ -124,7 +131,7 @@ DASHING = {
 
 DATABASES = {
     "default": {
-        'ENGINE'  : 'django.db.backends.postgresql_psycopg2',
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': os.environ.get('DB_NAME'),
         'USER': os.environ.get('DB_USER'),
         'PASSWORD': os.environ.get('DB_PASS'),
@@ -209,3 +216,10 @@ AUTH_USER_MODEL = "UserAuth.UserProfile"
 # Avoiding the wonderful debug pages to view my error messages
 # ALLOWED_HOSTS = ['*']
 # DEBUG         = False
+
+
+# Path to GDAL DLL for GeoDjango
+GDAL_LIBRARY_PATH = os.getenv('GDAL_LIBRARY_PATH', 'C:/Program Files/GDAL/gdal.dll')
+GEOS_LIBRARY_PATH = os.getenv('GEOS_LIBRARY_PATH', 'C:/Program Files/GDAL/geos_c.dll')
+
+
