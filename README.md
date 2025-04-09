@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Contents
 
 - [Contents](#contents)
@@ -135,3 +136,6 @@ To check if the tables are being filled:
 
 - [Python Documentation][PythonCode]
 - [Django Documentation][Django]
+=======
+# FarmData
+>>>>>>> b363a2e12b98c0af38ec6e1625fb6ee937ace13b
