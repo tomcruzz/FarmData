@@ -173,8 +173,17 @@
                             <span>Settings</span>
                         </a>
                     </li>
+                    <li class="sidebar-item">
+                        <a href="#" class="sidebar-link" data-bs-toggle="collapse" data-bs-target="#settingsDropdown">
+                            <img src="/static/Images/map.png" alt="Settings" class="sidebar-icon">
+                            <span>Maps</span>
+                            <i class="fas fa-chevron-down float-end"></i>
+                        </a>   
+                        <ul id="settingsDropdown" class="collapse list-unstyled">
+                            <li><a href="{% url 'maptiles:dynamic_tile' %}">Map Tiles</a></li> <!-- This line is new -->
+                        </ul>                 
                 </ul>
-        </div>
+            </div>
         </div>
         <div class="d-flex flex-column" id="CentralPage">
             {% block webpageContent %} https://www.youtube.com/watch?v=dQw4w9WgXcQ {% endblock %}
