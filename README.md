@@ -139,3 +139,19 @@ To check if the tables are being filled:
 =======
 # FarmData
 >>>>>>> b363a2e12b98c0af38ec6e1625fb6ee937ace13b
+
+---
+
+## 🌱 NDVI Preprocessing (Phase 2 - Varundeep Singh)
+
+This module provides sample NDVI (Normalized Difference Vegetation Index) preprocessing using Sentinel-2 satellite data.
+
+### ✅ Included Components:
+- `preprocessing_ndvi/preprocess_ndvi.py` — Python script to calculate and visualize NDVI using rasterio and matplotlib
+- `preprocessing_ndvi/data/` — includes sample Red (B04) and NIR (B08) bands from Sentinel Hub EO Browser
+- `assets/gifs/NDVI_Gatton_Mar-Apr2025.gif` — sample NDVI timelapse exported from EO Browser
+- `assets/gifs/NDVI_Gatton_Apr08.png` — PNG of processed NDVI map output using the above `.tif` files
+
+### 🛰️ Example Output:
+![NDVI Output](assets/gifs/NDVI_Gatton_Apr08.png)
+
